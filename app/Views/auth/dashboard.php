@@ -171,6 +171,121 @@
             </div>
         </div>
     <?php endif; ?>
+
+    <?php if (session('role') === 'student'): ?>
+        <div class="mt-4">
+            <h2 class="h4 text-light mb-3">Student Overview</h2>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <strong>Enrolled Courses</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Description</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
+                                    <?php foreach ($enrolledCourses as $c): ?>
+                                        <tr>
+                                            <td><?= esc($c['title'] ?? '') ?></td>
+                                            <td><?= esc($c['description'] ?? '') ?></td>
+                                            <td><?= esc($c['created_at'] ?? '') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No enrolled courses.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white">
+                            <strong>Upcoming Deadlines</strong>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Assignment</th>
+                                            <th>Course</th>
+                                            <th>Due</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($upcomingDeadlines) && is_array($upcomingDeadlines)): ?>
+                                            <?php foreach ($upcomingDeadlines as $d): ?>
+                                                <tr>
+                                                    <td><?= esc($d['title'] ?? '') ?></td>
+                                                    <td><?= esc($d['course_title'] ?? '') ?></td>
+                                                    <td><?= esc($d['due_date'] ?? '') ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">No upcoming deadlines.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white">
+                            <strong>Recent Grades</strong>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Assignment</th>
+                                            <th>Course</th>
+                                            <th>Score</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($recentGrades) && is_array($recentGrades)): ?>
+                                            <?php foreach ($recentGrades as $g): ?>
+                                                <tr>
+                                                    <td><?= esc($g['assignment_title'] ?? '') ?></td>
+                                                    <td><?= esc($g['course_title'] ?? '') ?></td>
+                                                    <td><?= esc($g['score'] ?? '') ?></td>
+                                                    <td><?= esc($g['created_at'] ?? '') ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">No recent grades.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 <?= $this->endSection() ?>
 
 

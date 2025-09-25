@@ -102,18 +102,43 @@
         <div class="mt-4">
             <h2 class="h4 text-light mb-3">Teacher Overview</h2>
 
+            <div class="row g-3 mb-2">
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="text-muted">Your Courses</div>
+                            <div class="fs-4 fw-bold"><?= esc(is_array($courses ?? null) ? count($courses) : 0) ?></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="text-muted">Recent Submissions</div>
+                            <div class="fs-4 fw-bold"><?= esc(is_array($notifications ?? null) ? count($notifications) : 0) ?></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white">
-                    <strong>Your Courses</strong>
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <strong>Your Courses</strong>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="courseFilter" class="form-control form-control-sm w-auto" placeholder="Filter courses...">
+                            <button type="button" id="exportCoursesCsv" class="btn btn-sm btn-outline-secondary">Export CSV</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-striped table-hover mb-0" id="coursesTable">
                             <thead>
                                 <tr>
-                                    <th>Title</th>
+                                    <th data-sort="text">Title</th>
                                     <th>Description</th>
-                                    <th>Created</th>
+                                    <th data-sort="date">Created</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -137,8 +162,9 @@
             </div>
 
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
                     <strong>Recent Submissions</strong>
+                    <button type="button" id="exportSubmissionsCsv" class="btn btn-sm btn-outline-secondary">Export CSV</button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -285,6 +311,96 @@
                 </div>
             </div>
         </div>
+    <?php endif; ?>
+
+    <?php if (session('role') === 'teacher'): ?>
+        <script>
+        (function(){
+            var input = document.getElementById('courseFilter');
+            if (!input) return;
+            var table = document.getElementById('coursesTable');
+            var tbody = table ? table.querySelector('tbody') : null;
+            if (!tbody) return;
+            input.addEventListener('input', function(){
+                var q = this.value.toLowerCase();
+                Array.prototype.forEach.call(tbody.rows, function(row){
+                    var title = (row.cells[0] && row.cells[0].textContent || '').toLowerCase();
+                    var desc  = (row.cells[1] && row.cells[1].textContent || '').toLowerCase();
+                    var match = !q || title.indexOf(q) !== -1 || desc.indexOf(q) !== -1;
+                    row.style.display = match ? '' : 'none';
+                });
+            });
+
+            // simple sort by clicking on header
+            var headers = table ? table.querySelectorAll('thead th[data-sort]') : [];
+            Array.prototype.forEach.call(headers, function(h, idx){
+                var asc = true;
+                h.style.cursor = 'pointer';
+                h.addEventListener('click', function(){
+                    var type = h.getAttribute('data-sort');
+                    var rows = Array.prototype.slice.call(tbody.rows);
+                    rows.sort(function(a, b){
+                        var av = (a.cells[idx] && a.cells[idx].textContent || '').trim();
+                        var bv = (b.cells[idx] && b.cells[idx].textContent || '').trim();
+                        if (type === 'date') {
+                            var ad = Date.parse(av) || 0;
+                            var bd = Date.parse(bv) || 0;
+                            return asc ? ad - bd : bd - ad;
+                        }
+                        av = av.toLowerCase();
+                        bv = bv.toLowerCase();
+                        if (av < bv) return asc ? -1 : 1;
+                        if (av > bv) return asc ? 1 : -1;
+                        return 0;
+                    });
+                    // repaint
+                    rows.forEach(function(r){ tbody.appendChild(r); });
+                    asc = !asc;
+                });
+            });
+
+            function tableToCsv(tableEl) {
+                var rows = tableEl.querySelectorAll('tr');
+                return Array.prototype.map.call(rows, function(row){
+                    var cells = row.querySelectorAll('th,td');
+                    return Array.prototype.map.call(cells, function(cell){
+                        var text = (cell.textContent || '').replace(/"/g, '""');
+                        return '"' + text + '"';
+                    }).join(',');
+                }).join('\n');
+            }
+            function downloadCsv(filename, csvText) {
+                var blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            var exportCoursesBtn = document.getElementById('exportCoursesCsv');
+            if (exportCoursesBtn && table) {
+                exportCoursesBtn.addEventListener('click', function(){
+                    var csv = tableToCsv(table);
+                    downloadCsv('courses.csv', csv);
+                });
+            }
+            var submissionsTable = document.querySelector('#coursesTable') ? document.querySelector('#coursesTable').closest('.mt-4').querySelectorAll('table')[1] : null;
+            var exportSubmissionsBtn = document.getElementById('exportSubmissionsCsv');
+            if (exportSubmissionsBtn) {
+                // safer lookup for the submissions table within the second card
+                var submissionsCard = exportSubmissionsBtn.closest('.card');
+                var submissionsTbl = submissionsCard ? submissionsCard.querySelector('table') : null;
+                exportSubmissionsBtn.addEventListener('click', function(){
+                    if (!submissionsTbl) return;
+                    var csv = tableToCsv(submissionsTbl);
+                    downloadCsv('submissions.csv', csv);
+                });
+            }
+        })();
+        </script>
     <?php endif; ?>
 <?= $this->endSection() ?>
 

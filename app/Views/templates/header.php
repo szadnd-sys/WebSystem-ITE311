@@ -14,17 +14,18 @@
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('contact') ?>">Contact</a></li>
                 <?php if (session('isLoggedIn')): ?>
                     <li class="nav-item"><a class="nav-link" href="<?= base_url('dashboard') ?>">Dashboard</a></li>
-                    <?php if (session('role') === 'admin'): ?>
+                    <?php $roleNav = strtolower((string) session('role')); if ($roleNav === 'instructor') { $roleNav = 'teacher'; } ?>
+                    <?php if ($roleNav === 'admin'): ?>
                         <!-- Admin-specific links can be added in the future if needed -->
-                    <?php elseif (session('role') === 'teacher'): ?>
+                    <?php elseif ($roleNav === 'teacher'): ?>
                         <!-- Teacher-specific links placeholder -->
-                    <?php elseif (session('role') === 'student'): ?>
+                    <?php elseif ($roleNav === 'student'): ?>
                         <!-- Student-specific links placeholder -->
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="<?= base_url('logout') ?>">Logout</a></li>
                 <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="<?= base_url('login') ?>">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('register') ?>">Register</a></li>
+                        
                 <?php endif; ?>
             </ul>
         </div>

@@ -110,13 +110,16 @@ class Auth extends Controller
                     if ($user && password_verify($password, $user['password'])) {
                         // Use the name field directly from database
                         $userName = $user['name'] ?? $user['email'];
-                        
+                        $role = strtolower((string)($user['role'] ?? 'student'));
+                        if ($role === 'instructor') {
+                            $role = 'teacher';
+                        }
                         // Set session data
                         $sessionData = [
                             'user_id' => $user['id'],
                             'user_name' => $userName,
                             'user_email' => $user['email'],
-                            'role' => $user['role'] ?? 'student',
+                            'role' => $role,
                             'isLoggedIn' => true
                         ];
                         
@@ -162,6 +165,9 @@ class Auth extends Controller
         }
         
         $role = strtolower((string) $session->get('role'));
+        if ($role === 'instructor') {
+            $role = 'teacher';
+        }
         $userId = (int) $session->get('user_id');
 
         // Prepare role-specific data

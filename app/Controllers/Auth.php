@@ -258,6 +258,6 @@ class Auth extends Controller
             'role' => $role
         ], $roleData);
 
-        return view('dashboard', $data);
+        return view('auth/dashboard', $data);
     }
 }

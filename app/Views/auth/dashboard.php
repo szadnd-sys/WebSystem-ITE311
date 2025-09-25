@@ -97,6 +97,80 @@
             </div>
         </div>
     <?php endif; ?>
+
+    <?php if (session('role') === 'teacher'): ?>
+        <div class="mt-4">
+            <h2 class="h4 text-light mb-3">Teacher Overview</h2>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <strong>Your Courses</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($courses) && is_array($courses)): ?>
+                                    <?php foreach ($courses as $c): ?>
+                                        <tr>
+                                            <td><?= esc($c['title'] ?? '') ?></td>
+                                            <td><?= esc($c['description'] ?? '') ?></td>
+                                            <td><?= esc($c['created_at'] ?? '') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No courses found.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <strong>Recent Submissions</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($notifications) && is_array($notifications)): ?>
+                                    <?php foreach ($notifications as $n): ?>
+                                        <tr>
+                                            <td><?= esc($n['student_name'] ?? '') ?></td>
+                                            <td><?= esc($n['course_id'] ?? '') ?></td>
+                                            <td><?= esc($n['created_at'] ?? '') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No recent submissions.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 <?= $this->endSection() ?>
 
 

@@ -216,9 +216,9 @@ class Auth extends Controller
                 $recentGrades = [];
                 try {
                     $enrolledCourses = $db->table('enrollments e')
-                        ->select('c.id, c.title, c.description, c.created_at')
+                        ->select('c.id, c.title, c.description, e.enrollment_date as created_at')
                         ->join('courses c', 'c.id = e.course_id', 'left')
-                        ->where('e.student_id', $userId)
+                        ->where('e.user_id', $userId)
                         ->orderBy('c.title', 'ASC')
                         ->get()
                         ->getResultArray();

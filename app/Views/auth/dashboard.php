@@ -98,6 +98,68 @@
         </div>
     <?php endif; ?>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('.enroll-btn').on('click', function(e) {
+            e.preventDefault();
+            var courseId = $(this).data('course-id');
+            var title = $(this).data('title');
+            var description = $(this).data('description');
+            var btn = $(this);
+
+            $.post('<?= base_url('course/enroll') ?>', { course_id: courseId }, function(response) {
+                if (response.success) {
+                    // Show success message
+                    var alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        response.message +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>';
+                    $('.alert-success').after(alertHtml);
+
+                    // Disable the button
+                    btn.prop('disabled', true).text('Enrolled');
+
+                    // Move the course to enrolled list
+                    var enrolledList = $('.list-group');
+                    if (enrolledList.length === 0) {
+                        // If no enrolled courses, create the list
+                        $('.card-body').first().html('<div class="list-group"></div>');
+                        enrolledList = $('.list-group');
+                    }
+                    var newItem = '<div class="list-group-item">' +
+                        '<h5 class="mb-1">' + title + '</h5>' +
+                        '<p class="mb-1">' + description + '</p>' +
+                        '<small>Enrolled on: ' + new Date().toLocaleDateString() + '</small>' +
+                        '</div>';
+                    enrolledList.append(newItem);
+
+                    // Remove the card from available courses
+                    btn.closest('.col-md-4').remove();
+
+                    // If no more available courses, show message
+                    if ($('.enroll-btn').length === 0) {
+                        $('.card-body').last().html('<p class="text-center text-muted">No available courses.</p>');
+                    }
+                } else {
+                    // Show error message
+                    var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                        response.message +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>';
+                    $('.alert-success').after(alertHtml);
+                }
+            }, 'json').fail(function() {
+                var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                    'An error occurred. Please try again.' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
+                $('.alert-success').after(alertHtml);
+            });
+        });
+    });
+    </script>
+
     <?php if (session('role') === 'teacher'): ?>
         <div class="mt-4">
             <h2 class="h4 text-light mb-3">Teacher Overview</h2>
@@ -206,33 +268,56 @@
                 <div class="card-header bg-white">
                     <strong>Enrolled Courses</strong>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Course</th>
-                                    <th>Description</th>
-                                    <th>Created</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
-                                    <?php foreach ($enrolledCourses as $c): ?>
-                                        <tr>
-                                            <td><?= esc($c['title'] ?? '') ?></td>
-                                            <td><?= esc($c['description'] ?? '') ?></td>
-                                            <td><?= esc($c['created_at'] ?? '') ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No enrolled courses.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="card-body">
+                    <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
+                        <div class="list-group">
+                            <?php foreach ($enrolledCourses as $c): ?>
+                                <div class="list-group-item">
+                                    <h5 class="mb-1"><?= esc($c['title'] ?? '') ?></h5>
+                                    <p class="mb-1"><?= esc($c['description'] ?? '') ?></p>
+                                    <small>Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-center text-muted">No enrolled courses.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <strong>Available Courses</strong>
+                </div>
+                <div class="card-body">
+                    <?php
+                    // Fetch available courses (not enrolled by the user)
+                    $db = \Config\Database::connect();
+                    $user_id = session('user_id');
+                    $availableCourses = $db->table('courses')
+                        ->whereNotIn('id', function($builder) use ($user_id) {
+                            return $builder->select('course_id')->from('enrollments')->where('user_id', $user_id);
+                        })
+                        ->get()
+                        ->getResultArray();
+                    ?>
+                    <?php if (!empty($availableCourses) && is_array($availableCourses)): ?>
+                        <div class="row">
+                            <?php foreach ($availableCourses as $course): ?>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?= esc($course['title'] ?? '') ?></h5>
+                                            <p class="card-text"><?= esc($course['description'] ?? '') ?></p>
+                                            <button class="btn btn-primary enroll-btn" data-course-id="<?= esc($course['id']) ?>" data-title="<?= esc($course['title']) ?>" data-description="<?= esc($course['description']) ?>">Enroll</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-center text-muted">No available courses.</p>
+                    <?php endif; ?>
                 </div>
             </div>
 

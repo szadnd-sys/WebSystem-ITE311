@@ -34,6 +34,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'roleauth'      => \App\Filters\RoleAuth::class,
     ];
 
     /**
@@ -51,11 +52,11 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
+            // 'forcehttps', // Disabled for local development to avoid HTTPS redirect issues
+            // 'pagecache',  // Disabled for local development to avoid stale pages
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
+            // 'pagecache',   // Disabled for local development to avoid stale pages
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
         ],

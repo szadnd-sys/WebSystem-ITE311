@@ -110,10 +110,17 @@ class Auth extends Controller
                     if ($user && password_verify($password, $user['password'])) {
                         // Use the name field directly from database
                         $userName = $user['name'] ?? $user['email'];
-                        $role = strtolower((string)($user['role'] ?? 'student'));
-                        if ($role === 'instructor') {
-                            $role = 'teacher';
-                        }
+                        // Normalize role: trim, lowercase, map common aliases
+                        $roleRaw = strtolower(trim((string)($user['role'] ?? 'student')));
+                        $roleMap = [
+                            'admin' => 'admin',
+                            'administrator' => 'admin',
+                            'teacher' => 'teacher',
+                            'instructor' => 'teacher',
+                            'professor' => 'teacher',
+                            'student' => 'student',
+                        ];
+                        $role = $roleMap[$roleRaw] ?? 'student';
                         // Set session data
                         $sessionData = [
                             'user_id' => $user['id'],
@@ -128,8 +135,15 @@ class Auth extends Controller
                         $session->set($sessionData);
                         $session->setFlashdata('success', 'Welcome, ' . $userName . '!');
 
-                        // Unified dashboard redirect
-                        return redirect()->to('/dashboard');
+                        // Role-based redirection
+                        if ($role === 'admin') {
+                            return redirect()->to(base_url('admin/dashboard'));
+                        } elseif ($role === 'teacher') {
+                            return redirect()->to(base_url('teacher/dashboard'));
+                        } else {
+                            // Default for students
+                            return redirect()->to(base_url('announcements'));
+                        }
                     } else {
                         $session->setFlashdata('login_error', 'Invalid email or password.');
                     }

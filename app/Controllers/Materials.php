@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\MaterialModel;
 use App\Models\EnrollmentModel;
+use App\Models\AnnouncementModel;
 use CodeIgniter\Controller;
 
 class Materials extends Controller
@@ -65,7 +66,22 @@ class Materials extends Controller
 
                 $materialId = $materialModel->insertMaterial($data);
                 if ($materialId) {
-                    $session->setFlashdata('success', 'Material uploaded successfully.');
+                    // Create announcement for enrolled students
+                    try {
+                        $announcementModel = new AnnouncementModel();
+                        $instructorId = (int) $session->get('user_id');
+                        $announcementModel->createMaterialAnnouncement(
+                            $courseId,
+                            $instructorId,
+                            $materialId,
+                            $file->getClientName()
+                        );
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the upload
+                        log_message('error', 'Failed to create announcement: ' . $e->getMessage());
+                    }
+                    
+                    $session->setFlashdata('success', 'Material uploaded successfully. Announcement sent to enrolled students.');
                 } else {
                     // Rollback stored file if DB insert failed
                     @unlink(WRITEPATH . 'uploads/' . $storedPath);

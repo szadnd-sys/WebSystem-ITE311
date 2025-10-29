@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\EnrollmentModel;
+use App\Models\NotificationModel;
 use App\Models\UserModel;
 use CodeIgniter\Controller;
 
@@ -39,6 +40,24 @@ class Course extends Controller
         ];
 
         if ($enrollmentModel->enrollUser($data)) {
+            // Create a notification for the enrolled student
+            try {
+                $db = \Config\Database::connect();
+                $course = $db->table('courses')->select('title')->where('id', (int) $course_id)->get()->getRowArray();
+                $courseTitle = $course && isset($course['title']) ? (string) $course['title'] : 'a course';
+
+                $notifications = new NotificationModel();
+                $notifications->insert([
+                    'user_id' => (int) $user_id,
+                    'title' => 'Enrollment Confirmed',
+                    'message' => "You have been enrolled in {$courseTitle}.",
+                    'link_url' => base_url('student/dashboard'),
+                    'is_read' => 0,
+                ]);
+            } catch (\Throwable $e) {
+                // Silently ignore notification failures
+            }
+
             return $this->response->setJSON(['success' => true, 'message' => 'Successfully enrolled in the course.']);
         } else {
             return $this->response->setJSON(['success' => false, 'message' => 'Failed to enroll in the course.']);

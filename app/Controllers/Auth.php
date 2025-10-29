@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\AnnouncementModel;
 use CodeIgniter\Controller;
 
 class Auth extends Controller
@@ -107,6 +108,17 @@ class Auth extends Controller
                     // Find user by email only
                     $user = $model->where('email', $email)->first();
                     
+                    // Debug logging
+                    if (!$user) {
+                        log_message('info', "Login attempt failed: User not found for email: {$email}");
+                    } elseif (isset($user['password'])) {
+                        $passwordMatch = password_verify($password, $user['password']);
+                        log_message('info', "Login attempt - Email: {$email}, Password match: " . ($passwordMatch ? 'YES' : 'NO'));
+                        if (!$passwordMatch) {
+                            log_message('info', "Stored hash: " . substr($user['password'], 0, 20) . "...");
+                        }
+                    }
+                    
                     if ($user && password_verify($password, $user['password'])) {
                         // Use the name field directly from database
                         $userName = $user['name'] ?? $user['email'];
@@ -142,7 +154,7 @@ class Auth extends Controller
                             return redirect()->to(base_url('teacher/dashboard'));
                         } else {
                             // Default for students
-                            return redirect()->to(base_url('announcements'));
+                            return redirect()->to(base_url('student/dashboard'));
                         }
                     } else {
                         $session->setFlashdata('login_error', 'Invalid email or password.');
@@ -303,6 +315,14 @@ class Auth extends Controller
                 } catch (\Throwable $e) {
                     $roleData['materialsByCourse'] = [];
                 }
+
+                // Student: Get announcements for enrolled courses
+                try {
+                    $announcementModel = new AnnouncementModel();
+                    $roleData['announcements'] = $announcementModel->getAnnouncementsForStudent($userId, 10);
+                } catch (\Throwable $e) {
+                    $roleData['announcements'] = [];
+                }
             }
         } catch (\Throwable $e) {
             $roleData = [];
@@ -315,5 +335,44 @@ class Auth extends Controller
         ], $roleData);
 
         return view('auth/dashboard', $data);
+    }
+
+    public function announcements()
+    {
+        $session = session();
+        
+        // Check if user is logged in
+        if (!$session->get('isLoggedIn')) {
+            $session->setFlashdata('login_error', 'Please login to view announcements.');
+            return redirect()->to('login');
+        }
+        
+        $role = strtolower((string) $session->get('role'));
+        
+        // Only students can access announcements page
+        if ($role !== 'student') {
+            $session->setFlashdata('access_error', 'Access denied. This page is only for students.');
+            return redirect()->to('dashboard');
+        }
+        
+        $userId = (int) $session->get('user_id');
+        $announcements = [];
+        
+        try {
+            $announcementModel = new AnnouncementModel();
+            $announcements = $announcementModel->getAnnouncementsForStudent($userId, 50); // Get more announcements for dedicated page
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to fetch announcements: ' . $e->getMessage());
+            $session->setFlashdata('error', 'Failed to load announcements. Please try again.');
+        }
+        
+        $data = [
+            'user_name' => $session->get('user_name'),
+            'user_email' => $session->get('user_email'),
+            'role' => $role,
+            'announcements' => $announcements,
+        ];
+        
+        return view('auth/announcements', $data);
     }
 }

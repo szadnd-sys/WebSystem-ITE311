@@ -259,8 +259,9 @@
                                             <td><?= esc($c['title'] ?? '') ?></td>
                                             <td><?= esc($c['description'] ?? '') ?></td>
                                             <td><?= esc($c['created_at'] ?? '') ?></td>
-                                            <td class="text-end">
+                                        <td class="text-end">
                                             <a class="btn btn-sm btn-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
+                                            <a class="btn btn-sm btn-outline-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/announce') ?>">Announce</a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -315,6 +316,41 @@
     <?php if (session('role') === 'student'): ?>
         <div class="mt-4">
             <h2 class="h4 text-light mb-3">Student Overview</h2>
+
+            <!-- Announcements Section -->
+            <?php if (!empty($announcements) && is_array($announcements)): ?>
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white">
+                        <strong>Announcements</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <?php foreach ($announcements as $announcement): ?>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                        <h5 class="mb-1"><?= esc($announcement['title'] ?? 'Announcement') ?></h5>
+                                        <small class="text-muted"><?= esc($announcement['created_at'] ?? '') ?></small>
+                                    </div>
+                                    <p class="mb-1"><?= esc($announcement['message'] ?? '') ?></p>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">
+                                            <strong>Course:</strong> <?= esc($announcement['course_title'] ?? 'N/A') ?>
+                                            <?php if (!empty($announcement['instructor_name'])): ?>
+                                                | <strong>From:</strong> <?= esc($announcement['instructor_name']) ?>
+                                            <?php endif; ?>
+                                        </small>
+                                        <?php if (!empty($announcement['material_name'])): ?>
+                                            <small class="text-primary">
+                                                <i class="bi bi-file-earmark"></i> New Material: <?= esc($announcement['material_name']) ?>
+                                            </small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white">

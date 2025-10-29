@@ -36,6 +36,21 @@ $routes->post('/admin/course/(:num)/students', 'Course::manage/$1');
 // Role dashboards and announcements destinations used by Auth::login redirects
 $routes->get('admin/dashboard', 'Auth::dashboard');
 $routes->get('teacher/dashboard', 'Auth::dashboard');
-$routes->get('announcements', 'Auth::dashboard');
+$routes->get('student/dashboard', 'Auth::dashboard');
+$routes->get('announcements', 'Auth::announcements');
+
+
+// Announcements (teacher/admin)
+$routes->get('/teacher/course/(:num)/announce', 'Announcements::create/$1');
+$routes->post('/teacher/course/(:num)/announce', 'Announcements::create/$1');
+$routes->get('/teacher/announce', 'Announcements::create');
+$routes->post('/teacher/announce', 'Announcements::create');
+
+
+// Notifications API
+$routes->get('/notifications/unread-count', 'Notifications::unreadCount');
+$routes->get('/notifications/list', 'Notifications::list');
+$routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
+$routes->post('/notifications/mark-read/(:num)', 'Notifications::markRead/$1');
 
 

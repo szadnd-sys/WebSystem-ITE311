@@ -25,6 +25,9 @@ $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->get('/materials/delete/(:num)', 'Materials::delete/$1');
 $routes->get('/materials/download/(:num)', 'Materials::download/$1');
+// Teacher alias routes for materials upload (same controller)
+$routes->get('/teacher/course/(:num)/upload', 'Materials::upload/$1');
+$routes->post('/teacher/course/(:num)/upload', 'Materials::upload/$1');
 
 // Course student management (teacher/admin)
 $routes->get('/admin/course/(:num)/students', 'Course::manage/$1');

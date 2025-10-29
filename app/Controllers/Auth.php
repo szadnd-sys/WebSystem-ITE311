@@ -200,13 +200,23 @@ class Auth extends Controller
                     $roleData['totalCourses'] = 0;
                 }
                 $roleData['recentUsers'] = $userModel->orderBy('created_at', 'DESC')->limit(5)->find();
+
+                // Admin: list all courses for management (including upload materials)
+                try {
+                    $roleData['allCourses'] = $db->table('courses')
+                        ->orderBy('created_at', 'DESC')
+                        ->get(20)
+                        ->getResultArray();
+                } catch (\Throwable $e) {
+                    $roleData['allCourses'] = [];
+                }
             } elseif ($role === 'teacher') {
                 $courses = [];
                 try {
+                    // Show all courses to instructors for easier material uploads
                     $courses = $db->table('courses')
-                        ->where('teacher_id', $userId)
                         ->orderBy('created_at', 'DESC')
-                        ->get(10)
+                        ->get(50)
                         ->getResultArray();
                 } catch (\Throwable $e) {
                     $courses = [];
@@ -267,6 +277,32 @@ class Auth extends Controller
                 $roleData['enrolledCourses'] = $enrolledCourses;
                 $roleData['upcomingDeadlines'] = $upcomingDeadlines;
                 $roleData['recentGrades'] = $recentGrades;
+
+                // Student: materials per enrolled course
+                try {
+                    $materialsByCourse = [];
+                    if (!empty($enrolledCourses)) {
+                        $courseIds = array_map(function ($c) { return (int)($c['id'] ?? 0); }, $enrolledCourses);
+                        $courseIds = array_values(array_filter($courseIds));
+                        if (!empty($courseIds)) {
+                            $materials = $db->table('materials')
+                                ->whereIn('course_id', $courseIds)
+                                ->orderBy('created_at', 'DESC')
+                                ->get()
+                                ->getResultArray();
+                            foreach ($materials as $m) {
+                                $cid = (int)($m['course_id'] ?? 0);
+                                if (!isset($materialsByCourse[$cid])) {
+                                    $materialsByCourse[$cid] = [];
+                                }
+                                $materialsByCourse[$cid][] = $m;
+                            }
+                        }
+                    }
+                    $roleData['materialsByCourse'] = $materialsByCourse;
+                } catch (\Throwable $e) {
+                    $roleData['materialsByCourse'] = [];
+                }
             }
         } catch (\Throwable $e) {
             $roleData = [];

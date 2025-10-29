@@ -160,6 +160,42 @@
     });
     </script>
 
+    <?php if (session('role') === 'admin' && !empty($allCourses) && is_array($allCourses)): ?>
+        <div class="mt-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <strong>Manage Courses</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Created</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($allCourses as $c): ?>
+                                    <tr>
+                                        <td><?= esc($c['title'] ?? '') ?></td>
+                                        <td><?= esc($c['description'] ?? '') ?></td>
+                                        <td><?= esc($c['created_at'] ?? '') ?></td>
+                                        <td class="text-end">
+                                            <a class="btn btn-sm btn-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <?php if (session('role') === 'teacher'): ?>
         <div class="mt-4">
             <h2 class="h4 text-light mb-3">Teacher Overview</h2>
@@ -187,9 +223,21 @@
                 <div class="card-header bg-white">
                     <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <strong>Your Courses</strong>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <input type="text" id="courseFilter" class="form-control form-control-sm w-auto" placeholder="Filter courses...">
                             <button type="button" id="exportCoursesCsv" class="btn btn-sm btn-outline-secondary">Export CSV</button>
+                            <?php if (!empty($courses) && is_array($courses)): ?>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select id="uploadCourseSelect" class="form-select form-select-sm w-auto">
+                                        <?php foreach ($courses as $csel): ?>
+                                            <option value="<?= esc($csel['id']) ?>"><?= esc($csel['title'] ?? ('Course #' . $csel['id'])) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="button" id="goUploadMaterials" class="btn btn-sm btn-primary">Upload Materials</button>
+                                </div>
+                            <?php else: ?>
+                                <button type="button" class="btn btn-sm btn-primary" disabled title="Create a course first">Upload Materials</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -212,8 +260,7 @@
                                             <td><?= esc($c['description'] ?? '') ?></td>
                                             <td><?= esc($c['created_at'] ?? '') ?></td>
                                             <td class="text-end">
-                                                <a class="btn btn-sm btn-outline-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/students') ?>">Add Students</a>
-                                                <a class="btn btn-sm btn-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
+                                            <a class="btn btn-sm btn-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -275,12 +322,52 @@
                 </div>
                 <div class="card-body">
                     <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
-                        <div class="list-group">
-                            <?php foreach ($enrolledCourses as $c): ?>
-                                <div class="list-group-item">
-                                    <h5 class="mb-1"><?= esc($c['title'] ?? '') ?></h5>
-                                    <p class="mb-1"><?= esc($c['description'] ?? '') ?></p>
-                                    <small>Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                        <div class="accordion" id="enrolledCoursesAccordion">
+                            <?php foreach ($enrolledCourses as $idx => $c): ?>
+                                <?php $cid = (int)($c['id'] ?? 0); ?>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading<?= $idx ?>">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $idx ?>" aria-expanded="false" aria-controls="collapse<?= $idx ?>">
+                                            <?= esc($c['title'] ?? '') ?>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse<?= $idx ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $idx ?>" data-bs-parent="#enrolledCoursesAccordion">
+                                        <div class="accordion-body">
+                                            <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
+                                            <small class="d-block mb-3">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-striped align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>File Name</th>
+                                                            <th>Uploaded</th>
+                                                            <th class="text-end">Download</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php $materialsForCourse = $materialsByCourse[$cid] ?? []; ?>
+                                                        <?php if (!empty($materialsForCourse)): ?>
+                                                            <?php foreach ($materialsForCourse as $mi => $m): ?>
+                                                                <tr>
+                                                                    <td><?= $mi + 1 ?></td>
+                                                                    <td><?= esc($m['file_name'] ?? '') ?></td>
+                                                                    <td><?= esc($m['created_at'] ?? '') ?></td>
+                                                                    <td class="text-end">
+                                                                        <a class="btn btn-sm btn-primary" href="<?= base_url('materials/download/' . esc($m['id'])) ?>">Download</a>
+                                                                    </td>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        <?php else: ?>
+                                                            <tr>
+                                                                <td colspan="4" class="text-center text-muted">No materials yet.</td>
+                                                            </tr>
+                                                        <?php endif; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -487,6 +574,17 @@
                     if (!submissionsTbl) return;
                     var csv = tableToCsv(submissionsTbl);
                     downloadCsv('submissions.csv', csv);
+                });
+            }
+
+            // Navigate to upload page for selected course
+            var uploadBtn = document.getElementById('goUploadMaterials');
+            var uploadSelect = document.getElementById('uploadCourseSelect');
+            if (uploadBtn && uploadSelect) {
+                uploadBtn.addEventListener('click', function(){
+                    var cid = uploadSelect.value;
+                    if (!cid) return;
+                    window.location.href = '<?= base_url('teacher/course') ?>/' + encodeURIComponent(cid) + '/upload';
                 });
             }
         })();

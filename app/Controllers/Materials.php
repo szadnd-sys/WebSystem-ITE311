@@ -44,6 +44,11 @@ class Materials extends Controller
 
             $file = $this->request->getFile('userfile');
             if ($file && $file->isValid()) {
+                // Ensure target directory exists (writable/uploads/materials)
+                $targetDir = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'materials';
+                if (!is_dir($targetDir)) {
+                    @mkdir($targetDir, 0775, true);
+                }
                 // Store in writable/uploads/materials with random name
                 $storedPath = $file->store('materials'); // e.g., materials/xxxxx.ext under writable/uploads
                 if ($storedPath === false) {
@@ -67,10 +72,17 @@ class Materials extends Controller
                     $session->setFlashdata('error', 'Failed to save material record.');
                 }
 
-                return redirect()->to('/admin/course/' . $courseId . '/upload');
+                // Redirect back to role-appropriate upload page
+                $redirectBase = ($role === 'teacher') ? '/teacher/course/' : '/admin/course/';
+                return redirect()->to($redirectBase . $courseId . '/upload');
             }
 
-            $session->setFlashdata('error', 'Invalid upload.');
+            // Surface specific upload error if available
+            if (isset($file) && $file !== null) {
+                $session->setFlashdata('error', 'Upload failed: ' . $file->getErrorString() . ' (' . $file->getError() . ')');
+            } else {
+                $session->setFlashdata('error', 'Invalid upload.');
+            }
             return redirect()->back();
         }
 
@@ -110,7 +122,8 @@ class Materials extends Controller
         // Delete DB record
         $materialModel->delete((int) $material_id);
         $session->setFlashdata('success', 'Material deleted.');
-        return redirect()->to('/admin/course/' . $courseId . '/upload');
+        $redirectBase = ($role === 'teacher') ? '/teacher/course/' : '/admin/course/';
+        return redirect()->to($redirectBase . $courseId . '/upload');
     }
 
     public function download($material_id)

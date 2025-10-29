@@ -1,3 +1,5 @@
+<?= $this->extend('template') ?>
+<?= $this->section('content') ?>
 <div class="container mt-4">
 	<h3>Upload Course Materials</h3>
 
@@ -63,5 +65,6 @@
 		</table>
 	</div>
 </div>
+<?= $this->endSection() ?>
 
 

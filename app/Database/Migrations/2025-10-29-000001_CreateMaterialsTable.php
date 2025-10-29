@@ -33,7 +33,7 @@ class CreateMaterialsTable extends Migration
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => false,
+                'null' => true,
             ],
         ]);
 

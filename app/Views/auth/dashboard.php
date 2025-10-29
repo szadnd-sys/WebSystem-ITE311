@@ -2,12 +2,15 @@
 
 <?= $this->section('content') ?>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0 text-light">Dashboard</h1>
-        <a href="<?= base_url('logout') ?>" class="btn btn-outline-primary">Logout</a>
+        <div>
+            <h1 class="mb-1 text-light">Dashboard</h1>
+            <div class="text-secondary">Welcome back, <span class="fw-semibold"><?= esc(session('user_name') ?: session('user_email')) ?></span></div>
+        </div>
     </div>
 
-    <div class="alert alert-success" role="alert">
-        Welcome, <?= esc(session('user_name') ?: session('user_email')) ?>!
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-emoji-smile me-1"></i> You are signed in.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <?php if (session('role') === 'admin'): ?>
@@ -16,34 +19,34 @@
 
             <div class="row g-3">
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="text-muted">Total Users</div>
-                            <div class="fs-4 fw-bold"><?= esc($totalUsers ?? 0) ?></div>
+                            <div class="text-secondary small mb-1"><i class="bi bi-people me-1"></i> Total Users</div>
+                            <div class="display-6 fw-bold mb-0"><?= esc($totalUsers ?? 0) ?></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="text-muted">Admins</div>
-                            <div class="fs-4 fw-bold"><?= esc($totalAdmins ?? 0) ?></div>
+                            <div class="text-secondary small mb-1"><i class="bi bi-shield-lock me-1"></i> Admins</div>
+                            <div class="display-6 fw-bold mb-0"><?= esc($totalAdmins ?? 0) ?></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="text-muted">Teachers</div>
-                            <div class="fs-4 fw-bold"><?= esc($totalTeachers ?? 0) ?></div>
+                            <div class="text-secondary small mb-1"><i class="bi bi-mortarboard me-1"></i> Teachers</div>
+                            <div class="display-6 fw-bold mb-0"><?= esc($totalTeachers ?? 0) ?></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="text-muted">Students</div>
-                            <div class="fs-4 fw-bold"><?= esc($totalStudents ?? 0) ?></div>
+                            <div class="text-secondary small mb-1"><i class="bi bi-person-badge me-1"></i> Students</div>
+                            <div class="display-6 fw-bold mb-0"><?= esc($totalStudents ?? 0) ?></div>
                         </div>
                     </div>
                 </div>
@@ -51,22 +54,23 @@
 
             <div class="row g-3 mt-1">
                 <div class="col-12 col-md-4">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="text-muted">Courses</div>
-                            <div class="fs-4 fw-bold"><?= esc($totalCourses ?? 0) ?></div>
+                            <div class="text-secondary small mb-1"><i class="bi bi-journal-bookmark me-1"></i> Courses</div>
+                            <div class="display-6 fw-bold mb-0"><?= esc($totalCourses ?? 0) ?></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <strong>Recent Users</strong>
+                    <span class="badge text-bg-secondary">Last 10</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-sm table-striped table-hover mb-0 align-middle">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -79,10 +83,10 @@
                                 <?php if (!empty($recentUsers) && is_array($recentUsers)): ?>
                                     <?php foreach ($recentUsers as $u): ?>
                                         <tr>
-                                            <td><?= esc($u['name'] ?? '') ?></td>
-                                            <td><?= esc($u['email'] ?? '') ?></td>
-                                            <td><?= esc($u['role'] ?? '') ?></td>
-                                            <td><?= esc($u['created_at'] ?? '') ?></td>
+                                            <td class="fw-semibold"><?= esc($u['name'] ?? '') ?></td>
+                                            <td class="text-secondary small"><?= esc($u['email'] ?? '') ?></td>
+                                            <td><span class="badge text-bg-light text-uppercase"><?= esc($u['role'] ?? '') ?></span></td>
+                                            <td class="small text-secondary"><?= esc($u['created_at'] ?? '') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -157,6 +161,54 @@
                 $('.alert-success').after(alertHtml);
             });
         });
+
+        // Drop course with confirmation
+        $(document).on('click', '.drop-btn', function(e){
+            e.preventDefault();
+            var courseId = $(this).data('course-id');
+            var title = $(this).data('title');
+            if (!courseId) return;
+            var msg = 'Are you sure you want to drop\n"' + (title || 'this course') + '"?';
+            if (!confirm(msg)) return;
+            var btn = $(this);
+            $.post('<?= base_url('course/drop') ?>', { course_id: courseId }, function(response){
+                if (response && response.success) {
+                    // Remove this accordion item
+                    var item = btn.closest('.accordion-item');
+                    var container = item.closest('#enrolledCoursesAccordion');
+                    item.remove();
+                    // If no more enrolled items, show empty text
+                    if (container.find('.accordion-item').length === 0) {
+                        container.closest('.card-body').html('<p class="text-center text-muted">No enrolled courses.</p>');
+                    }
+                    // Also add back to Available Courses without reload
+                    var availRow = $('#availableCoursesRow');
+                    var noMsg = $('#noAvailableMsg');
+                    if (noMsg.length) {
+                        // Replace message with a row container
+                        noMsg.replaceWith('<div class="row" id="availableCoursesRow"></div>');
+                        availRow = $('#availableCoursesRow');
+                    }
+                    if (availRow.length) {
+                        var cardHtml = ''
+                            + '<div class="col-md-4 mb-3">'
+                            +   '<div class="card h-100">'
+                            +     '<div class="card-body">'
+                            +       '<h5 class="card-title">' + $('<div>').text(title || '').html() + '</h5>'
+                            +       '<p class="card-text"></p>'
+                            +       '<button class="btn btn-primary enroll-btn" data-course-id="' + String(courseId) + '" data-title="' + $('<div>').text(title || '').html() + '" data-description="">Enroll</button>'
+                            +     '</div>'
+                            +   '</div>'
+                            + '</div>';
+                        availRow.prepend(cardHtml);
+                    }
+                } else {
+                    alert((response && response.message) ? response.message : 'Failed to drop the course.');
+                }
+            }, 'json').fail(function(){
+                alert('An error occurred. Please try again.');
+            });
+        });
     });
     </script>
 
@@ -198,7 +250,7 @@
 
     <?php if (session('role') === 'teacher'): ?>
         <div class="mt-4">
-            <h2 class="h4 text-light mb-3">Teacher Overview</h2>
+            <h2 class="h4 text-light mb-3"><i class="bi bi-mortarboard me-2"></i>Teacher Overview</h2>
 
             <div class="row g-3 mb-2">
                 <div class="col-6 col-md-3">
@@ -226,24 +278,12 @@
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <input type="text" id="courseFilter" class="form-control form-control-sm w-auto" placeholder="Filter courses...">
                             <button type="button" id="exportCoursesCsv" class="btn btn-sm btn-outline-secondary">Export CSV</button>
-                            <?php if (!empty($courses) && is_array($courses)): ?>
-                                <div class="d-flex align-items-center gap-2">
-                                    <select id="uploadCourseSelect" class="form-select form-select-sm w-auto">
-                                        <?php foreach ($courses as $csel): ?>
-                                            <option value="<?= esc($csel['id']) ?>"><?= esc($csel['title'] ?? ('Course #' . $csel['id'])) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button type="button" id="goUploadMaterials" class="btn btn-sm btn-primary">Upload Materials</button>
-                                </div>
-                            <?php else: ?>
-                                <button type="button" class="btn btn-sm btn-primary" disabled title="Create a course first">Upload Materials</button>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0" id="coursesTable">
+                        <table class="table table-sm table-striped table-hover mb-0 align-middle" id="coursesTable">
                             <thead>
                                 <tr>
                                     <th data-sort="text">Title</th>
@@ -256,13 +296,20 @@
                                 <?php if (!empty($courses) && is_array($courses)): ?>
                                     <?php foreach ($courses as $c): ?>
                                         <tr>
-                                            <td><?= esc($c['title'] ?? '') ?></td>
+                                            <td>
+                                                <a class="text-decoration-none" href="<?= base_url('teacher/course/' . esc($c['id']) . '/students') ?>">
+                                                    <?= esc($c['title'] ?? '') ?>
+                                                </a>
+                                            </td>
                                             <td><?= esc($c['description'] ?? '') ?></td>
                                             <td><?= esc($c['created_at'] ?? '') ?></td>
-                                        <td class="text-end">
-                                            <a class="btn btn-sm btn-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
-                                            <a class="btn btn-sm btn-outline-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/announce') ?>">Announce</a>
-                                            </td>
+                                        <td class="text-end text-nowrap">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Course actions">
+                                                <a class="btn btn-outline-secondary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/students') ?>">View Students</a>
+                                                <a class="btn btn-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/upload') ?>">Upload</a>
+                                                <a class="btn btn-outline-primary" href="<?= base_url('teacher/course/' . esc($c['id']) . '/announce') ?>">Announce</a>
+                                            </div>
+                                        </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -278,12 +325,12 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex align-items-center justify-content-between">
-                    <strong>Recent Submissions</strong>
+                    <strong><i class="bi bi-inbox me-2"></i>Recent Submissions</strong>
                     <button type="button" id="exportSubmissionsCsv" class="btn btn-sm btn-outline-secondary">Export CSV</button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-sm table-striped table-hover mb-0 align-middle">
                             <thead>
                                 <tr>
                                     <th>Student</th>
@@ -315,46 +362,15 @@
 
     <?php if (session('role') === 'student'): ?>
         <div class="mt-4">
-            <h2 class="h4 text-light mb-3">Student Overview</h2>
+            <h2 class="h4 text-light mb-3"><i class="bi bi-person-badge me-2"></i>Student Overview</h2>
 
-            <!-- Announcements Section -->
-            <?php if (!empty($announcements) && is_array($announcements)): ?>
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white">
-                        <strong>Announcements</strong>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            <?php foreach ($announcements as $announcement): ?>
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
-                                        <h5 class="mb-1"><?= esc($announcement['title'] ?? 'Announcement') ?></h5>
-                                        <small class="text-muted"><?= esc($announcement['created_at'] ?? '') ?></small>
-                                    </div>
-                                    <p class="mb-1"><?= esc($announcement['message'] ?? '') ?></p>
-                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <small class="text-muted">
-                                            <strong>Course:</strong> <?= esc($announcement['course_title'] ?? 'N/A') ?>
-                                            <?php if (!empty($announcement['instructor_name'])): ?>
-                                                | <strong>From:</strong> <?= esc($announcement['instructor_name']) ?>
-                                            <?php endif; ?>
-                                        </small>
-                                        <?php if (!empty($announcement['material_name'])): ?>
-                                            <small class="text-primary">
-                                                <i class="bi bi-file-earmark"></i> New Material: <?= esc($announcement['material_name']) ?>
-                                            </small>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
+            
 
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <strong>Enrolled Courses</strong>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses</strong>
+                    <?php $enrolledCount = !empty($enrolledCourses) && is_array($enrolledCourses) ? count($enrolledCourses) : 0; ?>
+                    <span class="badge text-bg-secondary"><?= $enrolledCount ?></span>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
@@ -370,7 +386,10 @@
                                     <div id="collapse<?= $idx ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $idx ?>" data-bs-parent="#enrolledCoursesAccordion">
                                         <div class="accordion-body">
                                             <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
-                                            <small class="d-block mb-3">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                                <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>">Drop course</button>
+                                            </div>
                                             <div class="table-responsive">
                                                 <table class="table table-sm table-striped align-middle">
                                                     <thead>
@@ -414,8 +433,8 @@
             </div>
 
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <strong>Available Courses</strong>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-journal-plus me-2"></i>Available Courses</strong>
                 </div>
                 <div class="card-body">
                     <?php
@@ -430,12 +449,12 @@
                         ->getResultArray();
                     ?>
                     <?php if (!empty($availableCourses) && is_array($availableCourses)): ?>
-                        <div class="row">
+                        <div class="row" id="availableCoursesRow">
                             <?php foreach ($availableCourses as $course): ?>
                                 <div class="col-md-4 mb-3">
                                     <div class="card h-100">
                                         <div class="card-body">
-                                            <h5 class="card-title"><?= esc($course['title'] ?? '') ?></h5>
+                                            <h5 class="card-title d-flex align-items-center gap-2"><i class="bi bi-journal-text text-primary"></i><span><?= esc($course['title'] ?? '') ?></span></h5>
                                             <p class="card-text"><?= esc($course['description'] ?? '') ?></p>
                                             <button class="btn btn-primary enroll-btn" data-course-id="<?= esc($course['id']) ?>" data-title="<?= esc($course['title']) ?>" data-description="<?= esc($course['description']) ?>">Enroll</button>
                                         </div>
@@ -444,7 +463,7 @@
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="text-center text-muted">No available courses.</p>
+                        <p id="noAvailableMsg" class="text-center text-muted">No available courses.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -453,11 +472,11 @@
                 <div class="col-12 col-lg-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white">
-                            <strong>Upcoming Deadlines</strong>
+                            <strong><i class="bi bi-calendar-event me-2"></i>Upcoming Deadlines</strong>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-striped table-hover mb-0">
+                                <table class="table table-sm table-striped table-hover mb-0 align-middle">
                                     <thead>
                                         <tr>
                                             <th>Assignment</th>
@@ -488,11 +507,11 @@
                 <div class="col-12 col-lg-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white">
-                            <strong>Recent Grades</strong>
+                            <strong><i class="bi bi-graph-up-arrow me-2"></i>Recent Grades</strong>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-striped table-hover mb-0">
+                                <table class="table table-sm table-striped table-hover mb-0 align-middle">
                                     <thead>
                                         <tr>
                                             <th>Assignment</th>
@@ -613,16 +632,7 @@
                 });
             }
 
-            // Navigate to upload page for selected course
-            var uploadBtn = document.getElementById('goUploadMaterials');
-            var uploadSelect = document.getElementById('uploadCourseSelect');
-            if (uploadBtn && uploadSelect) {
-                uploadBtn.addEventListener('click', function(){
-                    var cid = uploadSelect.value;
-                    if (!cid) return;
-                    window.location.href = '<?= base_url('teacher/course') ?>/' + encodeURIComponent(cid) + '/upload';
-                });
-            }
+            // Removed quick-upload select to avoid redundancy; per-row actions remain
         })();
         </script>
     <?php endif; ?>

@@ -1,0 +1,170 @@
+:root {
+  /* Teal & Gray (Modern Minimal) */
+  --primary: #009688;     /* Teal */
+  --accent:  #004D40;     /* Dark Teal */
+  --bg-page: #FAFAFA;     /* Background */
+  --bg-elev: #FFFFFF;     /* Elevated surfaces */
+  --text:    #263238;     /* Text */
+  --muted:   #546E7A;     /* Secondary text */
+  --border:  rgba(38, 50, 56, 0.14);
+}
+
+html, body {
+  background: var(--bg-page) !important;
+  color: var(--text);
+}
+
+/* Navbar */
+.app-navbar {
+  background: var(--primary) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+.navbar-brand {
+  letter-spacing: .5px;
+}
+.navbar .nav-link {
+  color: rgba(255,255,255,0.92) !important;
+}
+.navbar .nav-link:hover, .navbar .nav-link:focus {
+  color: #ffffff !important;
+}
+.navbar .nav-link.active {
+  color: #ffffff !important;
+  position: relative;
+}
+.navbar .nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: #FFFFFF;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.10);
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.card:hover {
+  transform: none;
+  box-shadow: 0 12px 26px rgba(0,0,0,.12);
+}
+.card-header {
+  background: #fbfbfd !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Emphasize big numbers inside cards (e.g., dashboard stats) */
+.card .display-6, .card .fs-4, .card .fw-bold.fs-4 {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Tables */
+.table { color: var(--text); }
+.table thead th {
+  color: var(--text);
+  background: #fbfbfd;
+  border-bottom-color: var(--border) !important;
+}
+.table > :not(caption) > * > * {
+  border-color: var(--border);
+}
+
+/* Alerts */
+.alert {
+  border-radius: 12px;
+}
+.alert-success {
+  background: #e0f2f1;
+  border-color: #b2dfdb;
+  color: #004d40;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary);
+  border: 0;
+  color: #ffffff;
+}
+.btn-primary:hover { background: #00a79a; }
+.btn-outline-primary { border-color: var(--primary); color: var(--primary); }
+.btn-outline-primary:hover { background: var(--primary); color: #fff; }
+
+/* Badges */
+.badge.text-bg-secondary { background: #e9ecef !important; color: #1C1C1C; }
+
+/* Accordion */
+.accordion-button {
+  background-color: #fbfbfd !important;
+  color: var(--text) !important;
+}
+.accordion-button:not(.collapsed) {
+  background-color: #eef3f4 !important;
+  color: var(--text) !important;
+}
+.accordion-item { background: var(--bg-elev); border-color: var(--border); }
+
+/* Footer */
+footer {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-top: none;
+}
+footer p { color: #ffffff !important; letter-spacing: .2px; }
+footer a { color: #E0F2F1; text-decoration: underline; font-weight: 600; }
+footer a:hover { color: #FFFFFF; }
+
+/* Utilities */
+.text-secondary { color: var(--muted) !important; }
+.text-muted { color: var(--muted) !important; }
+.small, small { color: var(--muted); }
+.display-6 { font-size: 2rem; }
+
+/* Forms - light balanced */
+.form-label, .form-text { color: var(--muted); }
+.form-control, .form-select {
+  background-color: #ffffff;
+  border: 1px solid rgba(38,50,56,0.18);
+  color: var(--text);
+}
+.form-control::placeholder { color: #78909C; opacity: .95; }
+.form-control:focus, .form-select:focus {
+  background-color: #ffffff;
+  color: var(--text);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 .2rem rgba(0,150,136,.20);
+}
+.input-group-text { background-color: #f6f7f9; border: 1px solid var(--border); color: var(--muted); }
+.form-check-input {
+  background-color: #ffffff;
+  border: 1px solid rgba(38,50,56,0.24);
+}
+.form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+
+/* Links */
+a { color: var(--accent); }
+a:hover { color: #00695C; }
+
+/* Override old dark-mode utilities to fit light theme */
+.bg-dark { background-color: var(--bg-page) !important; }
+.text-light { color: var(--text) !important; }
+

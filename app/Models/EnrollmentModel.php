@@ -47,4 +47,14 @@ class EnrollmentModel extends Model
                     ->where('course_id', $course_id)
                     ->first() !== null;
     }
+
+    /**
+     * Drop a user's enrollment from a specific course.
+     */
+    public function dropEnrollment(int $userId, int $courseId): bool
+    {
+        return (bool) $this->where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->delete();
+    }
 }

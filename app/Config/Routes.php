@@ -18,6 +18,7 @@ $routes->get('logout', 'Auth::logout');
 $routes->get('dashboard', 'Auth::dashboard');
 
 $routes->post('/course/enroll', 'Course::enroll');
+$routes->post('/course/drop', 'Course::drop');
 
 
 // Materials management
@@ -32,6 +33,9 @@ $routes->post('/teacher/course/(:num)/upload', 'Materials::upload/$1');
 // Course student management (teacher/admin)
 $routes->get('/admin/course/(:num)/students', 'Course::manage/$1');
 $routes->post('/admin/course/(:num)/students', 'Course::manage/$1');
+// Teacher alias for student list
+$routes->get('/teacher/course/(:num)/students', 'Course::manage/$1');
+$routes->post('/teacher/course/(:num)/students', 'Course::manage/$1');
 
 // Role dashboards and announcements destinations used by Auth::login redirects
 $routes->get('admin/dashboard', 'Auth::dashboard');

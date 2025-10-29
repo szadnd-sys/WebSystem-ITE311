@@ -45,7 +45,7 @@ class CreateAnnouncementsTable extends Migration
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => false,
+                'null' => true,
             ],
         ]);
 
@@ -66,5 +66,6 @@ class CreateAnnouncementsTable extends Migration
         $this->forge->dropTable('announcements', true);
     }
 }
+
 
 

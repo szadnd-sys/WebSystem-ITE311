@@ -1,6 +1,10 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-black">
-    <div class="container">
-        <a class="navbar-brand" href="<?= base_url('/') ?>">ITE311</a>
+<?php $roleNav = strtolower((string) (session('role') ?? '')); if ($roleNav === 'instructor') { $roleNav = 'teacher'; } ?>
+<nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top">
+    <div class="container-fluid px-3">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= base_url('/') ?>">
+            <i class="bi bi-braces"></i>
+            <span>ITE311</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
                 data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
                 aria-label="Toggle navigation">
@@ -8,14 +12,18 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Left group: primary navigation -->
+            <ul class="navbar-nav me-auto align-items-center gap-2">
+                <li class="nav-item"><a class="nav-link <?= url_is('/') ? 'active' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
+                <li class="nav-item"><a class="nav-link <?= url_is('about') ? 'active' : '' ?>" href="<?= base_url('about') ?>">About</a></li>
+                <li class="nav-item"><a class="nav-link <?= url_is('contact') ? 'active' : '' ?>" href="<?= base_url('contact') ?>">Contact</a></li>
+            </ul>
+
+            <!-- Right group: role links, notifications, auth -->
             <ul class="navbar-nav ms-auto align-items-center gap-2">
-                <li class="nav-item"><a class="nav-link" href="<?= base_url('/') ?>">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= base_url('about') ?>">About</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= base_url('contact') ?>">Contact</a></li>
                 <?php if (session('isLoggedIn')): ?>
-                    <?php $roleNav = strtolower((string) session('role')); if ($roleNav === 'instructor') { $roleNav = 'teacher'; } ?>
                     <?php if ($roleNav === 'student'): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_url('announcements') ?>">Announcements</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('announcements') ? 'active' : '' ?>" href="<?= base_url('announcements') ?>">Announcements</a></li>
                     <?php endif; ?>
 
                 <!-- Notifications Dropdown -->
@@ -38,16 +46,17 @@
                     </ul>
                 </li>
                     <?php if ($roleNav === 'admin'): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/dashboard') ?>">Admin Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('admin/dashboard') ? 'active' : '' ?>" href="<?= base_url('admin/dashboard') ?>">Dashboard</a></li>
                     <?php elseif ($roleNav === 'teacher'): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_url('teacher/dashboard') ?>">Teacher Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('teacher/dashboard') ? 'active' : '' ?>" href="<?= base_url('teacher/dashboard') ?>">Dashboard</a></li>
                     <?php elseif ($roleNav === 'student'): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_url('student/dashboard') ?>">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('student/dashboard') ? 'active' : '' ?>" href="<?= base_url('student/dashboard') ?>">Dashboard</a></li>
                     <?php endif; ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('logout') ?>">Logout</a></li>
+                    <li class="nav-item"><a class="btn btn-sm btn-light" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right me-1"></i> Logout</a></li>
                 <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('login') ?>">Login</a></li>
-                        
+                    <?php if (!url_is('login')): ?>
+                        <li class="nav-item"><a class="btn btn-sm btn-light" href="<?= base_url('login') ?>"><i class="bi bi-box-arrow-in-right me-1"></i> Login</a></li>
+                    <?php endif; ?>
                 <?php endif; ?>
             </ul>
         </div>

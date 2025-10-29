@@ -37,3 +37,4 @@ class UpdateUserPasswords extends Seeder
 }
 
 
+

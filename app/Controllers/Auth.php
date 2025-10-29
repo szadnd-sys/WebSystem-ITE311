@@ -7,6 +7,22 @@ use CodeIgniter\Controller;
 
 class Auth extends Controller
 {
+    /**
+     * Count users whose role matches any of the provided aliases (case-insensitive).
+     */
+    protected function countUsersByRoles(array $roles): int
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('users');
+        $builder->select('COUNT(*) as cnt');
+        $builder->groupStart();
+        foreach ($roles as $i => $r) {
+            $builder->orWhere('LOWER(role)', strtolower((string) $r));
+        }
+        $builder->groupEnd();
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
     public function register()
     {
         helper(['form']);
@@ -23,7 +39,7 @@ class Auth extends Controller
                 'email' => 'required|valid_email|is_unique[users.email]',
                 'password' => 'required|min_length[6]',
                 'password_confirm' => 'matches[password]',
-                'role' => 'permit_empty|in_list[student,teacher]'
+                'role' => 'permit_empty|in_list[student,teacher,admin]'
             ];
             
             if ($this->validate($rules)) {
@@ -34,7 +50,7 @@ class Auth extends Controller
                     $name = trim($this->request->getPost('name'));
                     $email = $this->request->getPost('email');
                     $roleInput = strtolower((string) $this->request->getPost('role'));
-                    $role = in_array($roleInput, ['student','teacher'], true) ? $roleInput : 'student';
+                    $role = in_array($roleInput, ['student','teacher','admin'], true) ? $roleInput : 'student';
                     
                     $data = [
                         'name' => $name,
@@ -203,9 +219,10 @@ class Auth extends Controller
             if ($role === 'admin') {
                 $userModel = new UserModel();
                 $roleData['totalUsers'] = $userModel->countAllResults();
-                $roleData['totalAdmins'] = $userModel->where('role', 'admin')->countAllResults();
-                $roleData['totalTeachers'] = $userModel->where('role', 'teacher')->countAllResults();
-                $roleData['totalStudents'] = $userModel->where('role', 'student')->countAllResults();
+                // Case-insensitive counts with common aliases
+                $roleData['totalAdmins'] = $this->countUsersByRoles(['admin','administrator']);
+                $roleData['totalTeachers'] = $this->countUsersByRoles(['teacher','instructor','professor']);
+                $roleData['totalStudents'] = $this->countUsersByRoles(['student']);
                 try {
                     $roleData['totalCourses'] = $db->table('courses')->countAllResults();
                 } catch (\Throwable $e) {

@@ -9,20 +9,24 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <!-- App Theme -->
+    <link rel="stylesheet" href="<?= base_url('public/css/app.css') ?>">
 </head>
-<body class="bg-dark text-light">
+<body class="d-flex flex-column min-vh-100">
 
     <!-- Navbar -->
     <?= $this->include('templates/header') ?>
 
     <!-- Main Content -->
-    <div class="container my-5">
-        <?= $this->renderSection('content') ?>
-    </div>
+    <main class="flex-grow-1">
+        <div class="container my-5">
+            <?= $this->renderSection('content') ?>
+        </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-black text-center text-secondary py-3">
-        <p>&copy; <?= date("Y"); ?> ITE311 Laboratory</p>
+    <footer class="text-center py-3">
+        <p class="mb-0 fw-semibold">&copy; <?= date("Y"); ?> ITE311 • All rights reserved</p>
     </footer>
 
     <!-- jQuery (for AJAX exercises) -->

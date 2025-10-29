@@ -41,8 +41,7 @@ class CreateNotificationsTable extends Migration
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => false,
-                'default' => 'CURRENT_TIMESTAMP',
+                'null' => true,
             ],
             'updated_at' => [
                 'type' => 'DATETIME',
@@ -62,5 +61,6 @@ class CreateNotificationsTable extends Migration
         $this->forge->dropTable('notifications', true);
     }
 }
+
 
 

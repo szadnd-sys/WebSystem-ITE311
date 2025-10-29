@@ -64,6 +64,30 @@ class Course extends Controller
         }
     }
 
+    public function drop()
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User not logged in.']);
+        }
+        $userId = (int) $session->get('user_id');
+        $courseId = (int) $this->request->getPost('course_id');
+        if (!$courseId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Course ID is required.']);
+        }
+
+        $enrollmentModel = new EnrollmentModel();
+        if (!$enrollmentModel->isAlreadyEnrolled($userId, $courseId)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'You are not enrolled in this course.']);
+        }
+
+        $ok = $enrollmentModel->dropEnrollment($userId, $courseId);
+        if ($ok) {
+            return $this->response->setJSON(['success' => true, 'message' => 'You have dropped the course.']);
+        }
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to drop the course.']);
+    }
+
     public function manage($course_id)
     {
         $session = session();

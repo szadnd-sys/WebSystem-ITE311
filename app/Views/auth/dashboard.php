@@ -201,6 +201,7 @@
                                     <th data-sort="text">Title</th>
                                     <th>Description</th>
                                     <th data-sort="date">Created</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -210,6 +211,10 @@
                                             <td><?= esc($c['title'] ?? '') ?></td>
                                             <td><?= esc($c['description'] ?? '') ?></td>
                                             <td><?= esc($c['created_at'] ?? '') ?></td>
+                                            <td class="text-end">
+                                                <a class="btn btn-sm btn-outline-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/students') ?>">Add Students</a>
+                                                <a class="btn btn-sm btn-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>

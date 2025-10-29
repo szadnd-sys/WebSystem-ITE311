@@ -26,6 +26,10 @@ $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->get('/materials/delete/(:num)', 'Materials::delete/$1');
 $routes->get('/materials/download/(:num)', 'Materials::download/$1');
 
+// Course student management (teacher/admin)
+$routes->get('/admin/course/(:num)/students', 'Course::manage/$1');
+$routes->post('/admin/course/(:num)/students', 'Course::manage/$1');
+
 // Role dashboards and announcements destinations used by Auth::login redirects
 $routes->get('admin/dashboard', 'Auth::dashboard');
 $routes->get('teacher/dashboard', 'Auth::dashboard');

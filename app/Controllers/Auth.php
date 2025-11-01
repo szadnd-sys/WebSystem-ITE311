@@ -50,7 +50,14 @@ class Auth extends Controller
                     $name = trim($this->request->getPost('name'));
                     $email = $this->request->getPost('email');
                     $roleInput = strtolower((string) $this->request->getPost('role'));
-                    $role = in_array($roleInput, ['student','teacher','admin'], true) ? $roleInput : 'student';
+                    // Convert 'teacher' to 'instructor' to match database ENUM
+                    if ($roleInput === 'teacher') {
+                        $role = 'instructor';
+                    } elseif (in_array($roleInput, ['student','admin'], true)) {
+                        $role = $roleInput;
+                    } else {
+                        $role = 'student';
+                    }
                     
                     $data = [
                         'name' => $name,
@@ -272,7 +279,8 @@ class Auth extends Controller
                         ->select('c.id, c.title, c.description, e.enrollment_date as created_at')
                         ->join('courses c', 'c.id = e.course_id', 'left')
                         ->where('e.user_id', $userId)
-                        ->orderBy('c.title', 'ASC')
+                        ->orderBy('e.enrollment_date', 'DESC')
+                        ->orderBy('e.id', 'DESC')
                         ->get()
                         ->getResultArray();
                 } catch (\Throwable $e) {

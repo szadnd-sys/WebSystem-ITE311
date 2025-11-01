@@ -82,10 +82,26 @@
                             <tbody>
                                 <?php if (!empty($recentUsers) && is_array($recentUsers)): ?>
                                     <?php foreach ($recentUsers as $u): ?>
+                                        <?php 
+                                        $roleRaw = strtolower(trim((string)($u['role'] ?? 'student')));
+                                        // Normalize role display: show instructor as TEACHER, handle missing roles
+                                        $roleDisplay = 'STUDENT';
+                                        if ($roleRaw === 'admin' || $roleRaw === 'administrator') {
+                                            $roleDisplay = 'ADMIN';
+                                        } elseif ($roleRaw === 'instructor' || $roleRaw === 'teacher' || $roleRaw === 'professor') {
+                                            $roleDisplay = 'TEACHER';
+                                        } elseif ($roleRaw === 'student') {
+                                            $roleDisplay = 'STUDENT';
+                                        } elseif (empty($roleRaw)) {
+                                            $roleDisplay = 'N/A';
+                                        } else {
+                                            $roleDisplay = strtoupper($roleRaw);
+                                        }
+                                        ?>
                                         <tr>
                                             <td class="fw-semibold"><?= esc($u['name'] ?? '') ?></td>
                                             <td class="text-secondary small"><?= esc($u['email'] ?? '') ?></td>
-                                            <td><span class="badge text-bg-light text-uppercase"><?= esc($u['role'] ?? '') ?></span></td>
+                                            <td><span class="badge text-bg-light text-uppercase"><?= esc($roleDisplay) ?></span></td>
                                             <td class="small text-secondary"><?= esc($u['created_at'] ?? '') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -103,62 +119,150 @@
     <?php endif; ?>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div id="enrollmentToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong class="me-auto">Enrollment Successful</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <div id="toastMessage"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
     $(document).ready(function() {
-        $('.enroll-btn').on('click', function(e) {
+        // Helper function to show toast notification
+        function showToast(message) {
+            $('#toastMessage').text(message);
+            var toastElement = document.getElementById('enrollmentToast');
+            var toast = new bootstrap.Toast(toastElement, { delay: 7000 });
+            toast.show();
+        }
+
+        // Helper function to update notification badge
+        function updateNotificationBadge() {
+            $.get('<?= base_url('notifications/unread-count') ?>', function(resp) {
+                if (resp && resp.success) {
+                    var badge = $('#notifBadge');
+                    var count = resp.count || 0;
+                    if (count > 0) {
+                        badge.text(String(count));
+                        badge.removeClass('d-none');
+                    } else {
+                        badge.addClass('d-none');
+                    }
+                }
+            }, 'json');
+        }
+
+        // Enroll button handler - using event delegation for dynamically added buttons
+        $(document).on('click', '.enroll-btn', function(e) {
             e.preventDefault();
             var courseId = $(this).data('course-id');
             var title = $(this).data('title');
-            var description = $(this).data('description');
+            var description = $(this).data('description') || '';
             var btn = $(this);
+            var card = btn.closest('.col-md-4');
+
+            // Disable button immediately to prevent double clicks
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Enrolling...');
 
             $.post('<?= base_url('course/enroll') ?>', { course_id: courseId }, function(response) {
                 if (response.success) {
-                    // Show success message
-                    var alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                        response.message +
-                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                        '</div>';
-                    $('.alert-success').after(alertHtml);
+                    // Show real-time toast notification
+                    showToast(response.message + ' Welcome aboard! Happy learning! 🎉');
+                    
+                    // Update notification badge
+                    updateNotificationBadge();
 
-                    // Disable the button
-                    btn.prop('disabled', true).text('Enrolled');
-
-                    // Move the course to enrolled list
-                    var enrolledList = $('.list-group');
-                    if (enrolledList.length === 0) {
-                        // If no enrolled courses, create the list
-                        $('.card-body').first().html('<div class="list-group"></div>');
-                        enrolledList = $('.list-group');
+                    // Get enrolled courses container
+                    var enrolledContainer = $('#enrolledCoursesAccordion');
+                    var enrolledCardBody = enrolledContainer.closest('.card-body');
+                    
+                    // If no enrolled courses section exists, create it
+                    if (enrolledContainer.length === 0) {
+                        var enrolledCard = $('.card-header:contains("Enrolled Courses")').closest('.card');
+                        if (enrolledCard.length) {
+                            enrolledCardBody = enrolledCard.find('.card-body');
+                            enrolledCardBody.html('<div class="accordion" id="enrolledCoursesAccordion"></div>');
+                            enrolledContainer = $('#enrolledCoursesAccordion');
+                        }
                     }
-                    var newItem = '<div class="list-group-item">' +
-                        '<h5 class="mb-1">' + title + '</h5>' +
-                        '<p class="mb-1">' + description + '</p>' +
-                        '<small>Enrolled on: ' + new Date().toLocaleDateString() + '</small>' +
+
+                    // Add course to enrolled accordion (insert at beginning for newest first order)
+                    // Use course ID for unique and stable accordion IDs
+                    var headingId = 'heading' + courseId;
+                    var collapseId = 'collapse' + courseId;
+                    var newItem = '' +
+                        '<div class="accordion-item">' +
+                            '<h2 class="accordion-header" id="' + headingId + '">' +
+                                '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#' + collapseId + '" aria-expanded="false">' +
+                                    $('<div>').text(title).html() +
+                                '</button>' +
+                            '</h2>' +
+                            '<div id="' + collapseId + '" class="accordion-collapse collapse" data-bs-parent="#enrolledCoursesAccordion">' +
+                                '<div class="accordion-body">' +
+                                    '<p class="mb-2">' + $('<div>').text(description).html() + '</p>' +
+                                    '<div class="d-flex align-items-center justify-content-between mb-3">' +
+                                        '<small class="d-block">Enrolled on: ' + new Date().toLocaleString() + '</small>' +
+                                        '<button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="' + courseId + '" data-title="' + $('<div>').text(title).html() + '" data-description="' + $('<div>').text(description).html() + '">Drop course</button>' +
+                                    '</div>' +
+                                    '<div class="table-responsive">' +
+                                        '<table class="table table-sm table-striped align-middle">' +
+                                            '<thead><tr><th>#</th><th>File Name</th><th>Uploaded</th><th class="text-end">Download</th></tr></thead>' +
+                                            '<tbody><tr><td colspan="4" class="text-center text-muted">No materials yet.</td></tr></tbody>' +
+                                        '</table>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
                         '</div>';
-                    enrolledList.append(newItem);
+                    // Insert at the beginning to match newest-first order
+                    enrolledContainer.prepend(newItem);
+
+                    // Update enrolled courses badge count
+                    var badge = enrolledCardBody.prev('.card-header').find('.badge');
+                    if (badge.length) {
+                        var currentCount = parseInt(badge.text()) || 0;
+                        badge.text(currentCount + 1);
+                    }
 
                     // Remove the card from available courses
-                    btn.closest('.col-md-4').remove();
-
-                    // If no more available courses, show message
-                    if ($('.enroll-btn').length === 0) {
-                        $('.card-body').last().html('<p class="text-center text-muted">No available courses.</p>');
-                    }
+                    card.fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // If no more available courses, show message
+                        if ($('#availableCoursesRow .col-md-4').length === 0) {
+                            $('#availableCoursesRow').remove();
+                            if ($('#noAvailableMsg').length === 0) {
+                                $('.card:has(.card-header:contains("Available Courses")) .card-body').html('<p id="noAvailableMsg" class="text-center text-muted">No available courses.</p>');
+                            }
+                        }
+                    });
                 } else {
-                    // Show error message
-                    var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                        response.message +
-                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                        '</div>';
-                    $('.alert-success').after(alertHtml);
+                    // Re-enable button on error
+                    btn.prop('disabled', false).text('Enroll');
+                    
+                    // Show error toast
+                    var errorToast = $('#enrollmentToast');
+                    errorToast.find('.toast-header').removeClass('bg-success text-white').addClass('bg-danger text-white');
+                    errorToast.find('strong').text('Enrollment Failed');
+                    showToast(response.message || 'Failed to enroll in the course.');
+                    
+                    // Reset toast styling
+                    setTimeout(function() {
+                        errorToast.find('.toast-header').removeClass('bg-danger text-white').addClass('bg-success text-white');
+                        errorToast.find('strong').text('Enrollment Successful');
+                    }, 5000);
                 }
             }, 'json').fail(function() {
-                var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                    'An error occurred. Please try again.' +
-                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                    '</div>';
-                $('.alert-success').after(alertHtml);
+                // Re-enable button on failure
+                btn.prop('disabled', false).text('Enroll');
+                showToast('An error occurred. Please try again.');
             });
         });
 
@@ -167,45 +271,95 @@
             e.preventDefault();
             var courseId = $(this).data('course-id');
             var title = $(this).data('title');
+            var description = $(this).data('description') || '';
             if (!courseId) return;
             var msg = 'Are you sure you want to drop\n"' + (title || 'this course') + '"?';
             if (!confirm(msg)) return;
             var btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Dropping...');
+            
             $.post('<?= base_url('course/drop') ?>', { course_id: courseId }, function(response){
                 if (response && response.success) {
-                    // Remove this accordion item
+                    // Get accordion item and container
                     var item = btn.closest('.accordion-item');
                     var container = item.closest('#enrolledCoursesAccordion');
-                    item.remove();
-                    // If no more enrolled items, show empty text
-                    if (container.find('.accordion-item').length === 0) {
-                        container.closest('.card-body').html('<p class="text-center text-muted">No enrolled courses.</p>');
+                    var enrolledCardBody = container.closest('.card-body');
+                    
+                    // Find and collapse any open accordion collapse within this item
+                    var collapseElement = item.find('.accordion-collapse');
+                    if (collapseElement.length && collapseElement.hasClass('show')) {
+                        // Collapse is open, hide it first
+                        var bsCollapse = bootstrap.Collapse.getInstance(collapseElement[0]);
+                        if (!bsCollapse) {
+                            // Initialize collapse if not already initialized
+                            bsCollapse = new bootstrap.Collapse(collapseElement[0], { toggle: false });
+                        }
+                        bsCollapse.hide();
+                        // Use one-time event listener
+                        collapseElement.one('hidden.bs.collapse', function() {
+                            // After collapse is hidden, remove the item
+                            item.fadeOut(300, function() {
+                                $(this).remove();
+                                cleanupAfterDrop();
+                            });
+                        });
+                        return;
                     }
-                    // Also add back to Available Courses without reload
-                    var availRow = $('#availableCoursesRow');
-                    var noMsg = $('#noAvailableMsg');
-                    if (noMsg.length) {
-                        // Replace message with a row container
-                        noMsg.replaceWith('<div class="row" id="availableCoursesRow"></div>');
-                        availRow = $('#availableCoursesRow');
-                    }
-                    if (availRow.length) {
-                        var cardHtml = ''
-                            + '<div class="col-md-4 mb-3">'
-                            +   '<div class="card h-100">'
-                            +     '<div class="card-body">'
-                            +       '<h5 class="card-title">' + $('<div>').text(title || '').html() + '</h5>'
-                            +       '<p class="card-text"></p>'
-                            +       '<button class="btn btn-primary enroll-btn" data-course-id="' + String(courseId) + '" data-title="' + $('<div>').text(title || '').html() + '" data-description="">Enroll</button>'
-                            +     '</div>'
-                            +   '</div>'
-                            + '</div>';
-                        availRow.prepend(cardHtml);
+                    
+                    // If collapse wasn't open, remove immediately
+                    item.fadeOut(300, function() {
+                        $(this).remove();
+                        cleanupAfterDrop();
+                    });
+                    
+                    function cleanupAfterDrop() {
+                        // Update enrolled courses badge count
+                        var badge = enrolledCardBody.prev('.card-header').find('.badge');
+                        if (badge.length) {
+                            var currentCount = parseInt(badge.text()) || 0;
+                            if (currentCount > 0) {
+                                badge.text(currentCount - 1);
+                            }
+                        }
+                        
+                        // If no more enrolled items, show empty text
+                        if (container.find('.accordion-item').length === 0) {
+                            enrolledCardBody.html('<p class="text-center text-muted">No enrolled courses.</p>');
+                        }
+                        
+                        // Add back to Available Courses immediately
+                        var availRow = $('#availableCoursesRow');
+                        var noMsg = $('#noAvailableMsg');
+                        
+                        if (noMsg.length) {
+                            // Replace message with a row container
+                            noMsg.replaceWith('<div class="row" id="availableCoursesRow"></div>');
+                            availRow = $('#availableCoursesRow');
+                        }
+                        
+                        if (availRow.length) {
+                            var cardHtml = '' +
+                                '<div class="col-md-4 mb-3">' +
+                                  '<div class="card h-100">' +
+                                    '<div class="card-body">' +
+                                      '<h5 class="card-title d-flex align-items-center gap-2"><i class="bi bi-journal-text text-primary"></i><span>' + $('<div>').text(title || '').html() + '</span></h5>' +
+                                      '<p class="card-text">' + $('<div>').text(description || '').html() + '</p>' +
+                                      '<button class="btn btn-primary enroll-btn" data-course-id="' + String(courseId) + '" data-title="' + $('<div>').text(title || '').html() + '" data-description="' + $('<div>').text(description || '').html() + '">Enroll</button>' +
+                                    '</div>' +
+                                  '</div>' +
+                                '</div>';
+                            availRow.prepend(cardHtml);
+                            
+                            // Animate the new card in
+                            availRow.find('.col-md-4').first().hide().fadeIn(300);
+                        }
                     }
                 } else {
+                    btn.prop('disabled', false).text('Drop course');
                     alert((response && response.message) ? response.message : 'Failed to drop the course.');
                 }
             }, 'json').fail(function(){
+                btn.prop('disabled', false).text('Drop course');
                 alert('An error occurred. Please try again.');
             });
         });
@@ -370,7 +524,7 @@
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses</strong>
                     <?php $enrolledCount = !empty($enrolledCourses) && is_array($enrolledCourses) ? count($enrolledCourses) : 0; ?>
-                    <span class="badge text-bg-secondary"><?= $enrolledCount ?></span>
+                    <span class="badge text-bg-primary fw-bold" style="font-size: 1rem; padding: 0.5rem 0.75rem;"><?= $enrolledCount ?></span>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
@@ -378,17 +532,17 @@
                             <?php foreach ($enrolledCourses as $idx => $c): ?>
                                 <?php $cid = (int)($c['id'] ?? 0); ?>
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="heading<?= $idx ?>">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $idx ?>" aria-expanded="false" aria-controls="collapse<?= $idx ?>">
+                                    <h2 class="accordion-header" id="heading<?= $cid ?>">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $cid ?>" aria-expanded="false" aria-controls="collapse<?= $cid ?>">
                                             <?= esc($c['title'] ?? '') ?>
                                         </button>
                                     </h2>
-                                    <div id="collapse<?= $idx ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $idx ?>" data-bs-parent="#enrolledCoursesAccordion">
+                                    <div id="collapse<?= $cid ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $cid ?>" data-bs-parent="#enrolledCoursesAccordion">
                                         <div class="accordion-body">
                                             <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
                                             <div class="d-flex align-items-center justify-content-between mb-3">
                                                 <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
-                                                <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>">Drop course</button>
+                                                <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>" data-description="<?= esc($c['description'] ?? '') ?>">Drop course</button>
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="table table-sm table-striped align-middle">

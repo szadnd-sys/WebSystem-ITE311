@@ -40,12 +40,13 @@ class Course extends Controller
         ];
 
         if ($enrollmentModel->enrollUser($data)) {
+            // Get course title for notification and response
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')->select('title')->where('id', (int) $course_id)->get()->getRowArray();
+            $courseTitle = $course && isset($course['title']) ? (string) $course['title'] : 'a course';
+
             // Create a notification for the enrolled student
             try {
-                $db = \Config\Database::connect();
-                $course = $db->table('courses')->select('title')->where('id', (int) $course_id)->get()->getRowArray();
-                $courseTitle = $course && isset($course['title']) ? (string) $course['title'] : 'a course';
-
                 $notifications = new NotificationModel();
                 $notifications->insert([
                     'user_id' => (int) $user_id,
@@ -57,8 +58,12 @@ class Course extends Controller
             } catch (\Throwable $e) {
                 // Silently ignore notification failures
             }
-
-            return $this->response->setJSON(['success' => true, 'message' => 'Successfully enrolled in the course.']);
+            
+            return $this->response->setJSON([
+                'success' => true, 
+                'message' => "Successfully enrolled in {$courseTitle}!", 
+                'course_title' => $courseTitle
+            ]);
         } else {
             return $this->response->setJSON(['success' => false, 'message' => 'Failed to enroll in the course.']);
         }

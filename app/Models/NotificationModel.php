@@ -41,6 +41,18 @@ class NotificationModel extends Model
         $this->where('id', $notificationId)->where('user_id', $userId);
         return (bool) $this->set(['is_read' => 1])->update();
     }
+
+    public function deleteByIdForUser(int $notificationId, int $userId): bool
+    {
+        $this->where('id', $notificationId)->where('user_id', $userId);
+        return (bool) $this->delete();
+    }
+
+    public function deleteAllForUser(int $userId): int
+    {
+        $this->where('user_id', $userId);
+        return (int) $this->delete();
+    }
 }
 
 

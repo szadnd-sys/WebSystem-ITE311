@@ -15,8 +15,16 @@
 
 	<div class="card mb-4">
 		<div class="card-body">
-			<form action="<?php echo base_url('admin/course/' . $course_id . '/upload'); ?>" method="post" enctype="multipart/form-data">
+			<?php 
+				// Dynamically determine the correct route based on user role
+				$role = $role ?? 'admin';
+				$routePrefix = ($role === 'teacher') ? 'teacher' : 'admin';
+				$formAction = base_url($routePrefix . '/course/' . $course_id . '/upload');
+			?>
+			<form action="<?php echo $formAction; ?>" method="post" enctype="multipart/form-data">
 				<?php echo csrf_field(); ?>
+				<!-- Hidden field to show current course (not used for processing, just for reference) -->
+				<input type="hidden" name="current_course_id" value="<?php echo esc($course_id); ?>" readonly>
 				<div class="mb-3">
 					<label for="userfile" class="form-label">Select file</label>
 					<input class="form-control" type="file" id="userfile" name="userfile" required>

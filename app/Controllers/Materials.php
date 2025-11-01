@@ -25,9 +25,27 @@ class Materials extends Controller
         }
 
         $courseId = (int) $course_id;
+        
+        // CRITICAL: Validate course_id - ensure course exists and user has access
+        $db = \Config\Database::connect();
+        $course = $db->table('courses')->where('id', $courseId)->get()->getRowArray();
+        if (!$course) {
+            $session->setFlashdata('error', 'Course not found.');
+            return redirect()->to('/dashboard');
+        }
+        
         $materialModel = new MaterialModel();
 
         if ($this->request->getMethod() === 'POST') {
+            // CRITICAL: Ignore any course_id from POST data - ALWAYS use the URL parameter
+            // This prevents materials from being uploaded to wrong courses
+            $courseIdFromPost = $this->request->getPost('course_id');
+            if ($courseIdFromPost && (int)$courseIdFromPost !== $courseId) {
+                log_message('warning', "Attempted course_id override detected: URL={$courseId}, POST={$courseIdFromPost}, User={$session->get('user_id')}");
+                $session->setFlashdata('error', 'Invalid course selection. Please try again.');
+                return redirect()->back();
+            }
+            
             $validationRules = [
                 'userfile' => [
                     'label' => 'Material File',
@@ -38,6 +56,7 @@ class Materials extends Controller
             if (!$this->validate($validationRules)) {
                 return view('materials/upload', [
                     'course_id' => $courseId,
+                    'role' => $role,
                     'validation' => $this->validator,
                     'materials' => $materialModel->getMaterialsByCourse($courseId),
                 ]);
@@ -57,8 +76,9 @@ class Materials extends Controller
                     return redirect()->back();
                 }
 
+                // CRITICAL: Use ONLY the course_id from URL parameter, never from POST
                 $data = [
-                    'course_id' => $courseId,
+                    'course_id' => $courseId, // Always use URL parameter, verified above
                     'file_name' => $file->getClientName(),
                     'file_path' => $storedPath, // relative to writable/uploads
                     'created_at' => date('Y-m-d H:i:s'),
@@ -105,6 +125,7 @@ class Materials extends Controller
         // GET: Show upload form and list
         return view('materials/upload', [
             'course_id' => $courseId,
+            'role' => $role,
             'materials' => $materialModel->getMaterialsByCourse($courseId),
             'validation' => null,
         ]);

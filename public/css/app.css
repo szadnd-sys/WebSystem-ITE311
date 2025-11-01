@@ -44,6 +44,23 @@ html, body {
   background: #FFFFFF;
 }
 
+/* Dropdown Menu Styling */
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 1px solid var(--border);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(0, 150, 136, 0.1);
+}
+
 /* Cards */
 .card {
   background: var(--bg-elev);

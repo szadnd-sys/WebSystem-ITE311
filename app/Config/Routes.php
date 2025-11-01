@@ -56,5 +56,7 @@ $routes->get('/notifications/unread-count', 'Notifications::unreadCount');
 $routes->get('/notifications/list', 'Notifications::list');
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
 $routes->post('/notifications/mark-read/(:num)', 'Notifications::markRead/$1');
+$routes->post('/notifications/delete/(:num)', 'Notifications::delete/$1');
+$routes->post('/notifications/delete-all', 'Notifications::deleteAll');
 
 

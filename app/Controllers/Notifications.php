@@ -80,6 +80,39 @@ class Notifications extends Controller
         }
         return $this->response->setJSON(['success' => (bool) $ok]);
     }
+
+    public function delete($id)
+    {
+        if ($redirect = $this->requireAuth()) {
+            return $this->response->setJSON(['success' => false]);
+        }
+        $notificationId = (int) $id;
+        $userId = (int) session('user_id');
+        $model = new NotificationModel();
+        $ok = false;
+        try {
+            $ok = $model->deleteByIdForUser($notificationId, $userId);
+        } catch (\Throwable $e) {
+            $ok = false;
+        }
+        return $this->response->setJSON(['success' => (bool) $ok]);
+    }
+
+    public function deleteAll()
+    {
+        if ($redirect = $this->requireAuth()) {
+            return $this->response->setJSON(['success' => false]);
+        }
+        $userId = (int) session('user_id');
+        $model = new NotificationModel();
+        $deleted = 0;
+        try {
+            $deleted = $model->deleteAllForUser($userId);
+        } catch (\Throwable $e) {
+            $deleted = 0;
+        }
+        return $this->response->setJSON(['success' => true, 'deleted' => (int) $deleted]);
+    }
 }
 
 

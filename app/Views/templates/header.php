@@ -1,10 +1,9 @@
 <?php $roleNav = strtolower((string) (session('role') ?? '')); if ($roleNav === 'instructor') { $roleNav = 'teacher'; } ?>
 <nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top">
     <div class="container-fluid px-3">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= base_url('/') ?>">
-            <i class="bi bi-braces"></i>
-            <span>ITE311</span>
-        </a>
+        <span class="navbar-brand d-flex align-items-center gap-2" style="cursor: default; pointer-events: none;" tabindex="-1">
+            <span class="fw-bold" style="font-size: 1.5rem;">Learning Management System</span>
+        </span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
                 data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
                 aria-label="Toggle navigation">
@@ -12,11 +11,18 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Left group: primary navigation -->
+            <!-- Left group: primary navigation with dropdown -->
             <ul class="navbar-nav me-auto align-items-center gap-2">
-                <li class="nav-item"><a class="nav-link <?= url_is('/') ? 'active' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
-                <li class="nav-item"><a class="nav-link <?= url_is('about') ? 'active' : '' ?>" href="<?= base_url('about') ?>">About</a></li>
-                <li class="nav-item"><a class="nav-link <?= url_is('contact') ? 'active' : '' ?>" href="<?= base_url('contact') ?>">Contact</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle <?= (url_is('/') || url_is('about') || url_is('contact')) ? 'active' : '' ?>" href="#" id="navDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Menu
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navDropdown">
+                        <li><a class="dropdown-item <?= url_is('/') ? 'active' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
+                        <li><a class="dropdown-item <?= url_is('about') ? 'active' : '' ?>" href="<?= base_url('about') ?>">About</a></li>
+                        <li><a class="dropdown-item <?= url_is('contact') ? 'active' : '' ?>" href="<?= base_url('contact') ?>">Contact</a></li>
+                    </ul>
+                </li>
             </ul>
 
             <!-- Right group: role links, notifications, auth -->
@@ -35,7 +41,10 @@
                     <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notifDropdown" style="min-width: 320px;">
                         <li class="p-2 border-bottom d-flex justify-content-between align-items-center">
                             <span class="fw-semibold">Notifications</span>
-                            <button type="button" id="markAllReadBtn" class="btn btn-sm btn-outline-secondary">Mark all read</button>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="markAllReadBtn" class="btn btn-sm btn-outline-secondary">Mark all read</button>
+                                <button type="button" id="deleteAllNotifBtn" class="btn btn-sm btn-outline-danger" title="Delete all notifications"><i class="bi bi-trash"></i></button>
+                            </div>
                         </li>
                         <li>
                             <div id="notifList" class="list-group list-group-flush" style="max-height: 360px; overflow:auto;">

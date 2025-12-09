@@ -42,12 +42,22 @@
         if (!badge || !list) return;
 
         function updateBadge(count){
-            if (count > 0) {
-                badge.textContent = String(count);
+            var badgeCount = parseInt(count) || 0;
+            if (badgeCount > 0) {
+                badge.textContent = String(badgeCount);
                 badge.classList.remove('d-none');
+                // Remove any inline styles that might force visibility
+                badge.style.removeProperty('display');
+                badge.style.removeProperty('visibility');
+                badge.style.removeProperty('opacity');
             } else {
+                // Hide badge when count is 0
                 badge.textContent = '0';
                 badge.classList.add('d-none');
+                // Force hide with inline styles to override any other styles
+                badge.style.setProperty('display', 'none', 'important');
+                badge.style.setProperty('visibility', 'hidden', 'important');
+                badge.style.setProperty('opacity', '0', 'important');
             }
         }
 
@@ -84,8 +94,16 @@
 
         function fetchCount(){
             $.get('<?= base_url('notifications/unread-count') ?>', function(resp){
-                if (resp && resp.success) updateBadge(resp.count || 0);
-            }, 'json');
+                if (resp && resp.success) {
+                    var count = parseInt(resp.count) || 0;
+                    updateBadge(count);
+                } else {
+                    updateBadge(0);
+                }
+            }, 'json').fail(function(){
+                // On error, hide badge
+                updateBadge(0);
+            });
         }
         function fetchList(){
             $.get('<?= base_url('notifications/list') ?>', { limit: 10 }, function(resp){
@@ -144,8 +162,12 @@
                 btn.textContent = 'Marking all...';
                 $.post('<?= base_url('notifications/mark-all-read') ?>', {}, function(resp){
                     if (resp && resp.success) {
-                        fetchCount();
+                        // Refresh the notification list first
                         fetchList();
+                        // Then update badge count after a short delay
+                        setTimeout(function() {
+                            fetchCount();
+                        }, 200);
                     } else {
                         btn.disabled = false;
                         btn.textContent = 'Mark all read';
@@ -206,8 +228,12 @@
             btn.prop('disabled', true).text('Marking...');
             $.post('<?= base_url('notifications/mark-read') ?>/' + encodeURIComponent(id), {}, function(resp){
                 if (resp && resp.success) {
-                    fetchCount();
+                    // Refresh the notification list first
                     fetchList();
+                    // Then update badge count after a short delay to ensure server has updated
+                    setTimeout(function() {
+                        fetchCount();
+                    }, 200);
                 } else {
                     btn.prop('disabled', false).text('Mark as read');
                     alert('Failed to mark notification as read. Please try again.');

@@ -28,6 +28,7 @@
             <!-- Right group: role links, notifications, auth -->
             <ul class="navbar-nav ms-auto align-items-center gap-2">
                 <?php if (session('isLoggedIn')): ?>
+                    <li class="nav-item"><a class="nav-link <?= url_is('search') ? 'active' : '' ?>" href="<?= base_url('search') ?>"><i class="bi bi-search me-1"></i>Search</a></li>
                     <?php if ($roleNav === 'student'): ?>
                         <li class="nav-item"><a class="nav-link <?= url_is('announcements') ? 'active' : '' ?>" href="<?= base_url('announcements') ?>">Announcements</a></li>
                     <?php endif; ?>

@@ -15,7 +15,12 @@
 
     <?php if (session('role') === 'admin'): ?>
         <div class="mt-4">
-            <h2 class="h4 text-light mb-3">Admin Overview</h2>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 text-light mb-0">Admin Overview</h2>
+                <a href="<?= base_url('admin/users') ?>" class="btn btn-primary btn-sm">
+                    <i class="bi bi-people me-1"></i> Manage Users
+                </a>
+            </div>
 
             <div class="row g-3">
                 <div class="col-6 col-md-3">
@@ -66,7 +71,12 @@
             <div class="card border-0 shadow-sm mt-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <strong>Recent Users</strong>
-                    <span class="badge text-bg-secondary">Last 10</span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge text-bg-secondary">Last 10</span>
+                        <a href="<?= base_url('admin/users') ?>" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-right me-1"></i> View All
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -144,18 +154,95 @@
             toast.show();
         }
 
-        // Helper function to update notification badge
+        // Helper function to update notification badge - uses same method as template
         function updateNotificationBadge() {
             $.get('<?= base_url('notifications/unread-count') ?>', function(resp) {
+                console.log('Notification count response:', resp);
                 if (resp && resp.success) {
-                    var badge = $('#notifBadge');
-                    var count = resp.count || 0;
-                    if (count > 0) {
-                        badge.text(String(count));
-                        badge.removeClass('d-none');
-                    } else {
-                        badge.addClass('d-none');
+                    var badge = document.getElementById('notifBadge');
+                    if (!badge) {
+                        console.error('Badge element not found in updateNotificationBadge');
+                        return;
                     }
+                    
+                    var count = parseInt(resp.count) || 0;
+                    console.log('Updating badge with count:', count);
+                    if (count > 0) {
+                        badge.textContent = String(count);
+                        badge.classList.remove('d-none');
+                        // Remove any inline styles that might force visibility
+                        badge.style.removeProperty('display');
+                        badge.style.removeProperty('visibility');
+                        badge.style.removeProperty('opacity');
+                        console.log('Badge shown with count:', count);
+                    } else {
+                        // Hide badge when count is 0
+                        badge.textContent = '0';
+                        badge.classList.add('d-none');
+                        // Force hide with inline styles to override any other styles
+                        badge.style.setProperty('display', 'none', 'important');
+                        badge.style.setProperty('visibility', 'hidden', 'important');
+                        badge.style.setProperty('opacity', '0', 'important');
+                        console.log('Badge hidden (count is 0)');
+                    }
+                } else {
+                    console.error('Bad response from notification count API:', resp);
+                    // On error, hide badge
+                    var badge = document.getElementById('notifBadge');
+                    if (badge) {
+                        badge.textContent = '0';
+                        badge.classList.add('d-none');
+                        badge.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            }, 'json').fail(function(xhr, status, error) {
+                console.error('Failed to fetch notification count:', status, error);
+                // On error, hide badge
+                var badge = document.getElementById('notifBadge');
+                if (badge) {
+                    badge.textContent = '0';
+                    badge.classList.add('d-none');
+                    badge.style.setProperty('display', 'none', 'important');
+                }
+            });
+        }
+        
+        // Helper function to refresh notification list (for real-time updates)
+        // This will refresh the notification dropdown list if it exists
+        function refreshNotificationList() {
+            var notifList = document.getElementById('notifList');
+            if (!notifList) return;
+            
+            $.get('<?= base_url('notifications/list') ?>', { limit: 10 }, function(resp) {
+                if (resp && resp.success) {
+                    var items = resp.notifications || [];
+                    if (!items || !items.length) {
+                        notifList.innerHTML = '<div class="p-3 text-muted text-center small">No notifications</div>';
+                        return;
+                    }
+                    var html = items.map(function(n){
+                        var isRead = Number(n.is_read) === 1 || n.is_read === '1' || n.is_read === true;
+                        var readClass = isRead ? '' : 'fw-semibold';
+                        var title = n.title ? String(n.title) : 'Notification';
+                        var msg = n.message ? String(n.message) : '';
+                        var time = n.created_at ? String(n.created_at) : '';
+                        var link = n.link_url ? '<a href="'+ encodeURI(n.link_url) +'" class="stretched-link"></a>' : '';
+                        var markReadBtn = !isRead 
+                            ? '<button type="button" class="btn btn-sm btn-outline-primary mark-read-btn" data-id="'+ String(n.id) +'">Mark as read</button>'
+                            : '';
+                        var deleteBtn = '<button type="button" class="btn btn-sm btn-outline-danger delete-notif-btn" data-id="'+ String(n.id) +'" title="Delete notification"><i class="bi bi-trash"></i></button>';
+                        var actions = '<div class="mt-2 position-relative d-flex gap-2 align-items-center" style="z-index: 10; pointer-events: auto;">' + markReadBtn + deleteBtn + '</div>';
+                        return (
+                            '<div class="list-group-item position-relative" data-notif-id="'+ String(n.id) +'">' +
+                            '<div class="small text-muted">' + time + '</div>' +
+                            '<div class="'+ readClass +'">' + title + '</div>' +
+                            (msg ? '<div class="small text-secondary">' + msg + '</div>' : '') +
+                            actions +
+                            link +
+                            '</div>'
+                        );
+                    }).join('');
+                    notifList.innerHTML = html;
                 }
             }, 'json');
         }
@@ -177,8 +264,26 @@
                     // Show real-time toast notification
                     showToast(response.message + ' Welcome aboard! Happy learning! 🎉');
                     
-                    // Update notification badge
+                    // Immediately update badge optimistically (notification should be created)
                     updateNotificationBadge();
+                    
+                    // Refresh notification badge and list from server after notification is created
+                    setTimeout(function() {
+                        updateNotificationBadge();
+                        refreshNotificationList();
+                    }, 500);
+                    
+                    // Refresh again to ensure notification appears
+                    setTimeout(function() {
+                        updateNotificationBadge();
+                        refreshNotificationList();
+                    }, 1000);
+                    
+                    // Final refresh to ensure everything is synced
+                    setTimeout(function() {
+                        updateNotificationBadge();
+                        refreshNotificationList();
+                    }, 2000);
 
                     // Get enrolled courses container
                     var enrolledContainer = $('#enrolledCoursesAccordion');
@@ -591,6 +696,18 @@
                     <strong><i class="bi bi-journal-plus me-2"></i>Available Courses</strong>
                 </div>
                 <div class="card-body">
+                    <!-- Search Filter -->
+                    <div class="mb-3">
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="courseSearchFilter" 
+                            placeholder="Search courses by title or description..."
+                            autocomplete="off"
+                        >
+                        <small class="text-muted">Type to filter courses in real-time</small>
+                    </div>
+                    
                     <?php
                     // Fetch available courses (not enrolled by the user)
                     $db = \Config\Database::connect();
@@ -605,7 +722,8 @@
                     <?php if (!empty($availableCourses) && is_array($availableCourses)): ?>
                         <div class="row" id="availableCoursesRow">
                             <?php foreach ($availableCourses as $course): ?>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-4 mb-3 course-card-item" 
+                                     data-search-text="<?= esc(strtolower(($course['title'] ?? '') . ' ' . ($course['description'] ?? ''))) ?>">
                                     <div class="card h-100">
                                         <div class="card-body">
                                             <h5 class="card-title d-flex align-items-center gap-2"><i class="bi bi-journal-text text-primary"></i><span><?= esc($course['title'] ?? '') ?></span></h5>
@@ -616,11 +734,44 @@
                                 </div>
                             <?php endforeach; ?>
                         </div>
+                        <div id="noCoursesFound" class="text-center text-muted" style="display: none;">
+                            <p>No courses found matching your search.</p>
+                        </div>
                     <?php else: ?>
                         <p id="noAvailableMsg" class="text-center text-muted">No available courses.</p>
                     <?php endif; ?>
                 </div>
             </div>
+            
+            <script>
+            $(document).ready(function() {
+                $('#courseSearchFilter').on('input', function() {
+                    var searchTerm = $(this).val().toLowerCase().trim();
+                    var visibleCount = 0;
+                    
+                    $('.course-card-item').each(function() {
+                        var $item = $(this);
+                        var searchText = $item.attr('data-search-text') || '';
+                        
+                        if (searchTerm === '' || searchText.indexOf(searchTerm) !== -1) {
+                            $item.show();
+                            visibleCount++;
+                        } else {
+                            $item.hide();
+                        }
+                    });
+                    
+                    // Show/hide no results message
+                    if (visibleCount === 0 && searchTerm !== '') {
+                        $('#noCoursesFound').show();
+                        $('#availableCoursesRow').hide();
+                    } else {
+                        $('#noCoursesFound').hide();
+                        $('#availableCoursesRow').show();
+                    }
+                });
+            });
+            </script>
 
             <div class="row g-3 mb-3">
                 <div class="col-12 col-lg-6">

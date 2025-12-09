@@ -18,18 +18,21 @@ class UserSeeder extends Seeder
                 'email'    => 'admin@example.com',
                 'password' => password_hash('admin123', PASSWORD_BCRYPT),
                 'role'     => 'admin',
+                'is_active' => 1,
             ],
             [
                 'name'     => 'John Student',
                 'email'    => 'student@example.com',
                 'password' => password_hash('student123', PASSWORD_BCRYPT),
                 'role'     => 'student',
+                'is_active' => 1,
             ],
             [
                 'name'     => 'Jane Instructor',
                 'email'    => 'instructor@example.com',
                 'password' => password_hash('instructor123', PASSWORD_BCRYPT),
                 'role'     => 'instructor',
+                'is_active' => 1,
             ],
         ];
 

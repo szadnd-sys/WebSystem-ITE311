@@ -185,3 +185,10 @@ a:hover { color: #00695C; }
 .bg-dark { background-color: var(--bg-page) !important; }
 .text-light { color: var(--text) !important; }
 
+/* Force notification badge to show (override Bootstrap d-none) */
+#notifBadge.show-badge {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+

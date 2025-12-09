@@ -43,6 +43,16 @@ $routes->get('teacher/dashboard', 'Auth::dashboard');
 $routes->get('student/dashboard', 'Auth::dashboard');
 $routes->get('announcements', 'Auth::announcements');
 
+// Admin User Management
+$routes->get('admin/users', 'Admin::users');
+$routes->get('admin/users/add', 'Admin::addUser');
+$routes->post('admin/users/create', 'Admin::createUser');
+$routes->get('admin/users/edit/(:num)', 'Admin::editUser/$1');
+$routes->post('admin/users/update/(:num)', 'Admin::updateUser/$1');
+$routes->get('admin/users/delete/(:num)', 'Admin::deleteUser/$1');
+$routes->get('admin/users/activate/(:num)', 'Admin::activateUser/$1');
+$routes->get('admin/users/deactivate/(:num)', 'Admin::deactivateUser/$1');
+
 
 // Announcements (teacher/admin)
 $routes->get('/teacher/course/(:num)/announce', 'Announcements::create/$1');
@@ -58,5 +68,10 @@ $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
 $routes->post('/notifications/mark-read/(:num)', 'Notifications::markRead/$1');
 $routes->post('/notifications/delete/(:num)', 'Notifications::delete/$1');
 $routes->post('/notifications/delete-all', 'Notifications::deleteAll');
+
+// Search Routes
+$routes->get('/search', 'Search::index');
+$routes->get('/search/courses', 'Search::courses');
+$routes->get('/search/materials', 'Search::materials');
 
 

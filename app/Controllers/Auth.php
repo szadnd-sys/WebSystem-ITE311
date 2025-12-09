@@ -143,6 +143,14 @@ class Auth extends Controller
                     }
                     
                     if ($user && password_verify($password, $user['password'])) {
+                        // Check if account is active
+                        $isActive = isset($user['is_active']) ? (int)$user['is_active'] : 1; // Default to active if field doesn't exist
+                        
+                        if ($isActive === 0) {
+                            $session->setFlashdata('login_error', 'Your account has been deactivated. Please contact the administrator.');
+                            return redirect()->to('login');
+                        }
+                        
                         // Use the name field directly from database
                         $userName = $user['name'] ?? $user['email'];
                         // Normalize role: trim, lowercase, map common aliases

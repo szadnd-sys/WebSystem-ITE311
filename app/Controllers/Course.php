@@ -48,15 +48,21 @@ class Course extends Controller
             // Create a notification for the enrolled student
             try {
                 $notifications = new NotificationModel();
-                $notifications->insert([
+                $notificationId = $notifications->insert([
                     'user_id' => (int) $user_id,
-                    'title' => 'Enrollment Confirmed',
-                    'message' => "You have been enrolled in {$courseTitle}.",
+                    'title' => 'Enrollment Successful',
+                    'message' => "Successfully enrolled in {$courseTitle}.",
                     'link_url' => base_url('student/dashboard'),
                     'is_read' => 0,
                 ]);
+                
+                if ($notificationId) {
+                    log_message('info', "Enrollment notification created for user {$user_id}, course: {$courseTitle}");
+                }
             } catch (\Throwable $e) {
-                // Silently ignore notification failures
+                // Log notification failures for debugging
+                log_message('error', 'Failed to create enrollment notification: ' . $e->getMessage());
+                log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             }
             
             return $this->response->setJSON([

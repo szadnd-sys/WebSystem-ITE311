@@ -72,7 +72,7 @@
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <strong>Recent Users</strong>
                     <div class="d-flex gap-2 align-items-center">
-                        <span class="badge text-bg-secondary">Last 10</span>
+                    <span class="badge text-bg-secondary">Last 10</span>
                         <a href="<?= base_url('admin/users') ?>" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-arrow-right me-1"></i> View All
                         </a>

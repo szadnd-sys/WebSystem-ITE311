@@ -166,7 +166,7 @@
                         fetchList();
                         // Then update badge count after a short delay
                         setTimeout(function() {
-                            fetchCount();
+                        fetchCount();
                         }, 200);
                     } else {
                         btn.disabled = false;
@@ -232,7 +232,7 @@
                     fetchList();
                     // Then update badge count after a short delay to ensure server has updated
                     setTimeout(function() {
-                        fetchCount();
+                    fetchCount();
                     }, 200);
                 } else {
                     btn.prop('disabled', false).text('Mark as read');

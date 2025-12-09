@@ -25,7 +25,7 @@
         </div>
     <?php endif; ?>
 
-    <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
         <i class="bi bi-shield-lock me-1"></i> <strong>Admin Protection:</strong> Admin users are protected and cannot be edited, deleted, or have their roles changed through this interface.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -59,8 +59,8 @@
 
     <!-- Users Table -->
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <strong>All Users</strong>
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <strong class="fs-5">All Users</strong>
             <span class="badge text-bg-secondary"><?= count($users ?? []) ?> users</span>
         </div>
         <div class="card-body p-0">

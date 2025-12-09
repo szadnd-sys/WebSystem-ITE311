@@ -10,8 +10,6 @@ $routes->get('about', 'Home::about');
 $routes->get('contact', 'Home::contact');
 
 // Authentication Routes
-$routes->get('register', 'Auth::register');
-$routes->post('register', 'Auth::register');
 $routes->get('login', 'Auth::login');
 $routes->post('login', 'Auth::login');
 $routes->get('logout', 'Auth::logout');
@@ -73,5 +71,10 @@ $routes->post('/notifications/delete-all', 'Notifications::deleteAll');
 $routes->get('/search', 'Search::index');
 $routes->get('/search/courses', 'Search::courses');
 $routes->get('/search/materials', 'Search::materials');
+
+// Settings Routes (for all authenticated users)
+$routes->get('settings', 'Settings::index');
+$routes->post('settings/update-profile', 'Settings::updateProfile');
+$routes->post('settings/update-password', 'Settings::updatePassword');
 
 

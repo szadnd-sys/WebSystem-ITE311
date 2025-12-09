@@ -23,91 +23,14 @@ class Auth extends Controller
         $row = $builder->get()->getRowArray();
         return (int) ($row['cnt'] ?? 0);
     }
+    /**
+     * Registration is disabled - only admins can add users
+     */
     public function register()
     {
-        helper(['form']);
         $session = session();
-        $model = new UserModel();
-        
-        if ($this->request->getMethod() === 'POST') {
-            // Add detailed logging
-            log_message('info', 'Registration POST request received');
-            log_message('info', 'POST data: ' . print_r($this->request->getPost(), true));
-            
-            $rules = [
-                'name' => 'required|min_length[3]|max_length[100]',
-                'email' => 'required|valid_email|is_unique[users.email]',
-                'password' => 'required|min_length[6]',
-                'password_confirm' => 'matches[password]',
-                'role' => 'permit_empty|in_list[student,teacher,admin]'
-            ];
-            
-            if ($this->validate($rules)) {
-                log_message('info', 'Validation passed');
-                
-                try {
-                    // Get the data from form
-                    $name = trim($this->request->getPost('name'));
-                    $email = $this->request->getPost('email');
-                    $roleInput = strtolower((string) $this->request->getPost('role'));
-                    // Convert 'teacher' to 'instructor' to match database ENUM
-                    if ($roleInput === 'teacher') {
-                        $role = 'instructor';
-                    } elseif (in_array($roleInput, ['student','admin'], true)) {
-                        $role = $roleInput;
-                    } else {
-                        $role = 'student';
-                    }
-                    
-                    $data = [
-                        'name' => $name,
-                        'email' => $email,
-                        'password' => $this->request->getPost('password'), // Let model handle hashing
-                        'role' => $role
-                    ];
-                    
-                    log_message('info', 'Attempting to insert user data: ' . print_r($data, true));
-                    
-                    // Save user to database
-                    $insertResult = $model->insert($data);
-                    
-                    if ($insertResult) {
-                        log_message('info', 'User inserted successfully with ID: ' . $insertResult);
-                        $session->setFlashdata('register_success', 'Registration successful. Please login.');
-                        return redirect()->to(base_url('login'));
-                    } else {
-                        // Get the last error for debugging
-                        $errors = $model->errors();
-                        $errorMessage = 'Registration failed. ';
-                        
-                        log_message('error', 'Model insert failed. Errors: ' . print_r($errors, true));
-                        log_message('error', 'Model validation errors: ' . print_r($model->getValidationMessages(), true));
-                        
-                        if (!empty($errors)) {
-                            $errorMessage .= implode(', ', $errors);
-                        } else {
-                            $errorMessage .= 'Please try again.';
-                        }
-                        $session->setFlashdata('register_error', $errorMessage);
-                    }
-                } catch (\Exception $e) {
-                    log_message('error', 'Registration exception: ' . $e->getMessage());
-                    log_message('error', 'Stack trace: ' . $e->getTraceAsString());
-                    $session->setFlashdata('register_error', 'Registration failed. Please try again. Error: ' . $e->getMessage());
-                }
-            } else {
-                // Validation failed
-                $validationErrors = $this->validator->getErrors();
-                log_message('error', 'Validation failed: ' . print_r($validationErrors, true));
-                
-                $errorMessage = 'Validation failed: ' . implode(', ', $validationErrors);
-                $session->setFlashdata('register_error', $errorMessage);
-            }
-        }
-        
-        return view('auth/register', [
-            'validation' => $this->validator
-        ]);
+        $session->setFlashdata('login_error', 'Registration is disabled. Please contact an administrator to create an account.');
+        return redirect()->to('login');
     }
 
     public function login()

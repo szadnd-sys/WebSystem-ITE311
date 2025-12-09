@@ -62,6 +62,7 @@
                     <?php elseif ($roleNav === 'student'): ?>
                         <li class="nav-item"><a class="nav-link <?= url_is('student/dashboard') ? 'active' : '' ?>" href="<?= base_url('student/dashboard') ?>">Dashboard</a></li>
                     <?php endif; ?>
+                    <li class="nav-item"><a class="nav-link <?= url_is('settings') ? 'active' : '' ?>" href="<?= base_url('settings') ?>"><i class="bi bi-gear me-1"></i>Settings</a></li>
                     <li class="nav-item"><a class="btn btn-sm btn-light" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right me-1"></i> Logout</a></li>
                 <?php else: ?>
                     <?php if (!url_is('login')): ?>

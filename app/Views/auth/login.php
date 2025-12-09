@@ -5,12 +5,6 @@
     <div class="col-md-6 col-lg-5">
         <h1 class="text-center mb-4">Sign In</h1>
 
-        <?php if (session()->getFlashdata('register_success')): ?>
-            <div class="alert alert-success" role="alert">
-                <?= esc(session()->getFlashdata('register_success')) ?>
-            </div>
-        <?php endif; ?>
-
         <?php if (session()->getFlashdata('login_error')): ?>
             <div class="alert alert-danger" role="alert">
                 <?= esc(session()->getFlashdata('login_error')) ?>
@@ -33,7 +27,6 @@
             </div>
         </div>
 
-        <p class="text-center mt-3 text-muted small">Don't have an account? <a href="<?= base_url('register') ?>">Register</a></p>
     </div>
 <?php /* close container started in template via section */ ?>
 <?= $this->endSection() ?>

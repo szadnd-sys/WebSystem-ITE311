@@ -199,23 +199,49 @@ class Auth extends Controller
                 } catch (\Throwable $e) {
                     $notifications = [];
                 }
+                // Get pending enrollments for teacher's courses
+                $pendingEnrollments = [];
+                try {
+                    $enrollmentModel = new \App\Models\EnrollmentModel();
+                    $pendingEnrollments = $enrollmentModel->getPendingEnrollmentsForTeacher($userId);
+                } catch (\Throwable $e) {
+                    $pendingEnrollments = [];
+                }
                 $roleData['courses'] = $courses;
                 $roleData['notifications'] = $notifications;
+                $roleData['pendingEnrollments'] = $pendingEnrollments;
             } elseif ($role === 'student') {
                 $enrolledCourses = [];
+                $pendingEnrollments = [];
+                $rejectedEnrollments = [];
                 $upcomingDeadlines = [];
                 $recentGrades = [];
                 try {
-                    $enrolledCourses = $db->table('enrollments e')
-                        ->select('c.id, c.title, c.description, e.enrollment_date as created_at')
+                    // Get all enrollments with status
+                    $allEnrollments = $db->table('enrollments e')
+                        ->select('c.id, c.title, c.description, e.enrollment_date as created_at, e.status, e.rejection_reason')
                         ->join('courses c', 'c.id = e.course_id', 'left')
                         ->where('e.user_id', $userId)
                         ->orderBy('e.enrollment_date', 'DESC')
                         ->orderBy('e.id', 'DESC')
                         ->get()
                         ->getResultArray();
+                    
+                    // Separate by status
+                    foreach ($allEnrollments as $enrollment) {
+                        $status = $enrollment['status'] ?? 'pending';
+                        if ($status === 'approved') {
+                            $enrolledCourses[] = $enrollment;
+                        } elseif ($status === 'pending') {
+                            $pendingEnrollments[] = $enrollment;
+                        } elseif ($status === 'rejected') {
+                            $rejectedEnrollments[] = $enrollment;
+                        }
+                    }
                 } catch (\Throwable $e) {
                     $enrolledCourses = [];
+                    $pendingEnrollments = [];
+                    $rejectedEnrollments = [];
                 }
                 try {
                     $upcomingDeadlines = $db->table('assignments a')
@@ -243,6 +269,8 @@ class Auth extends Controller
                     $recentGrades = [];
                 }
                 $roleData['enrolledCourses'] = $enrolledCourses;
+                $roleData['pendingEnrollments'] = $pendingEnrollments;
+                $roleData['rejectedEnrollments'] = $rejectedEnrollments;
                 $roleData['upcomingDeadlines'] = $upcomingDeadlines;
                 $roleData['recentGrades'] = $recentGrades;
 

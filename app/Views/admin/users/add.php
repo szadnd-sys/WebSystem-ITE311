@@ -34,6 +34,12 @@
                         <?php if ($validation && $validation->hasError('name')): ?>
                             <div class="invalid-feedback"><?= esc($validation->getError('name')) ?></div>
                         <?php endif; ?>
+                        <div id="name-error" class="invalid-feedback" style="display: none;">
+                            Full name cannot contain special characters. Only letters, spaces, hyphens, apostrophes, and periods are allowed.
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Only letters, spaces, hyphens (-), apostrophes ('), and periods (.) are allowed.
+                        </small>
                     </div>
 
                     <div class="col-md-6">
@@ -90,5 +96,55 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('name');
+            const nameError = document.getElementById('name-error');
+            
+            // Regex pattern: only letters, spaces, hyphens, apostrophes, and periods
+            const namePattern = /^[a-zA-Z\s\-\'\.]*$/;
+            
+            function validateName() {
+                const value = nameInput.value.trim();
+                
+                if (value === '') {
+                    // Empty is okay, required validation will handle it
+                    nameInput.classList.remove('is-invalid');
+                    nameError.style.display = 'none';
+                    return true;
+                }
+                
+                if (!namePattern.test(value)) {
+                    // Special characters detected
+                    nameInput.classList.add('is-invalid');
+                    nameError.style.display = 'block';
+                    return false;
+                } else {
+                    // Valid input
+                    nameInput.classList.remove('is-invalid');
+                    nameError.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Validate on input (as user types)
+            nameInput.addEventListener('input', validateName);
+            
+            // Validate on blur (when field loses focus)
+            nameInput.addEventListener('blur', validateName);
+            
+            // Validate on form submit
+            const form = nameInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateName()) {
+                        e.preventDefault();
+                        nameInput.focus();
+                    }
+                });
+            }
+        });
+    </script>
 <?= $this->endSection() ?>
 

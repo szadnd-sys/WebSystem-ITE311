@@ -129,36 +129,24 @@
                                                 <i class="bi bi-lock-fill me-1"></i>Protected
                                             </span>
                                         <?php else: ?>
-                                            <div class="btn-group btn-group-sm" role="group">
+                                            <div class="btn-group" role="group">
                                                 <a href="<?= base_url('admin/users/edit/' . $user['id']) ?>" 
-                                                   class="btn btn-outline-primary" title="Edit">
+                                                   class="btn btn-outline-primary btn-lg" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <?php if ($isActive === 1): ?>
                                                     <a href="<?= base_url('admin/users/deactivate/' . $user['id']) ?>" 
-                                                       class="btn btn-outline-warning" 
+                                                       class="btn btn-outline-warning btn-lg" 
                                                        title="Deactivate"
                                                        onclick="return confirm('Are you sure you want to deactivate this user? They will not be able to login.');">
                                                         <i class="bi bi-pause-circle"></i>
                                                     </a>
                                                 <?php else: ?>
                                                     <a href="<?= base_url('admin/users/activate/' . $user['id']) ?>" 
-                                                       class="btn btn-outline-success" 
+                                                       class="btn btn-outline-success btn-lg" 
                                                        title="Activate">
                                                         <i class="bi bi-play-circle"></i>
                                                     </a>
-                                                <?php endif; ?>
-                                                <?php if ($user['id'] != session('user_id')): ?>
-                                                    <a href="<?= base_url('admin/users/delete/' . $user['id']) ?>" 
-                                                       class="btn btn-outline-danger" 
-                                                       title="Delete"
-                                                       onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
-                                                        <i class="bi bi-trash"></i>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <button class="btn btn-outline-secondary" disabled title="Cannot delete your own account">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
                                                 <?php endif; ?>
                                             </div>
                                         <?php endif; ?>

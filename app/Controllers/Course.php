@@ -27,51 +27,98 @@ class Course extends Controller
 
         $enrollmentModel = new EnrollmentModel();
 
-        // Check if already enrolled
+        // Check if already enrolled (approved)
         if ($enrollmentModel->isAlreadyEnrolled($user_id, $course_id)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Already enrolled in this course.']);
         }
 
-        // Enroll the user
+        // Check if already has pending enrollment
+        if ($enrollmentModel->hasPendingEnrollment($user_id, $course_id)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'You already have a pending enrollment request for this course.']);
+        }
+
+        // Enroll the user with pending status
         $data = [
             'user_id' => $user_id,
             'course_id' => $course_id,
             'enrollment_date' => date('Y-m-d H:i:s'),
+            'status' => 'pending', // Always set to pending - requires teacher approval
         ];
 
-        if ($enrollmentModel->enrollUser($data)) {
-            // Get course title for notification and response
+        try {
+            $result = $enrollmentModel->enrollUser($data);
+            
+            if ($result) {
+            // Get course title and instructor info
             $db = \Config\Database::connect();
-            $course = $db->table('courses')->select('title')->where('id', (int) $course_id)->get()->getRowArray();
+            $course = $db->table('courses')
+                ->select('courses.title, courses.instructor_id, users.email as instructor_email')
+                ->join('users', 'users.id = courses.instructor_id', 'left')
+                ->where('courses.id', (int) $course_id)
+                ->get()
+                ->getRowArray();
             $courseTitle = $course && isset($course['title']) ? (string) $course['title'] : 'a course';
 
-            // Create a notification for the enrolled student
+            // Create notification for student (pending enrollment)
             try {
                 $notifications = new NotificationModel();
-                $notificationId = $notifications->insert([
+                $notifications->insert([
                     'user_id' => (int) $user_id,
-                    'title' => 'Enrollment Successful',
-                    'message' => "Successfully enrolled in {$courseTitle}.",
+                    'title' => 'Enrollment Request Submitted',
+                    'message' => "Your enrollment request for {$courseTitle} has been submitted and is pending teacher approval.",
                     'link_url' => base_url('student/dashboard'),
                     'is_read' => 0,
                 ]);
-                
-                if ($notificationId) {
-                    log_message('info', "Enrollment notification created for user {$user_id}, course: {$courseTitle}");
-                }
             } catch (\Throwable $e) {
-                // Log notification failures for debugging
                 log_message('error', 'Failed to create enrollment notification: ' . $e->getMessage());
-                log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            }
+
+            // Create notification for teacher if instructor_id exists
+            if ($course && isset($course['instructor_id']) && $course['instructor_id']) {
+                try {
+                    $student = $db->table('users')->select('name')->where('id', $user_id)->get()->getRowArray();
+                    $studentName = $student && isset($student['name']) ? $student['name'] : 'A student';
+                    
+                    $notifications = new NotificationModel();
+                    $notifications->insert([
+                        'user_id' => (int) $course['instructor_id'],
+                        'title' => 'New Enrollment Request',
+                        'message' => "{$studentName} has requested to enroll in {$courseTitle}.",
+                        'link_url' => base_url('teacher/dashboard'),
+                        'is_read' => 0,
+                    ]);
+                } catch (\Throwable $e) {
+                    log_message('error', 'Failed to create teacher notification: ' . $e->getMessage());
+                }
+            }
+            
+                return $this->response->setJSON([
+                    'success' => true, 
+                    'message' => "Enrollment request submitted for {$courseTitle}. Waiting for teacher approval.", 
+                    'course_title' => $courseTitle,
+                    'status' => 'pending'
+                ]);
+            } else {
+                $errors = $enrollmentModel->errors();
+                $errorMsg = !empty($errors) ? implode(', ', $errors) : 'Failed to submit enrollment request.';
+                return $this->response->setJSON(['success' => false, 'message' => $errorMsg]);
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Enrollment error: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            
+            // Check if error is due to missing status column
+            if (strpos($e->getMessage(), 'status') !== false || strpos($e->getMessage(), 'Unknown column') !== false) {
+                return $this->response->setJSON([
+                    'success' => false, 
+                    'message' => 'Database migration required. Please run: php spark migrate'
+                ]);
             }
             
             return $this->response->setJSON([
-                'success' => true, 
-                'message' => "Successfully enrolled in {$courseTitle}!", 
-                'course_title' => $courseTitle
+                'success' => false, 
+                'message' => 'An error occurred while processing your enrollment request. Please contact the administrator.'
             ]);
-        } else {
-            return $this->response->setJSON(['success' => false, 'message' => 'Failed to enroll in the course.']);
         }
     }
 
@@ -130,21 +177,46 @@ class Course extends Controller
                 $session->setFlashdata('error', 'Student already enrolled.');
                 return redirect()->to('/admin/course/' . $courseId . '/students');
             }
-            $enrollmentModel->insert([
-                'user_id' => (int) $student['id'],
-                'course_id' => $courseId,
-                'enrollment_date' => date('Y-m-d H:i:s'),
-            ]);
-            $session->setFlashdata('success', 'Student enrolled successfully.');
+            
+            // Check if has pending enrollment
+            if ($enrollmentModel->hasPendingEnrollment((int) $student['id'], $courseId)) {
+                // Update pending enrollment to approved
+                $pendingEnrollment = $enrollmentModel->where('user_id', (int) $student['id'])
+                    ->where('course_id', $courseId)
+                    ->where('status', 'pending')
+                    ->first();
+                
+                if ($pendingEnrollment) {
+                    $enrollmentModel->update($pendingEnrollment['id'], [
+                        'status' => 'approved',
+                        'approved_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $session->setFlashdata('success', 'Pending enrollment approved and student enrolled successfully.');
+                } else {
+                    $session->setFlashdata('error', 'Failed to approve pending enrollment.');
+                }
+            } else {
+                // Create new approved enrollment
+                $enrollmentModel->insert([
+                    'user_id' => (int) $student['id'],
+                    'course_id' => $courseId,
+                    'enrollment_date' => date('Y-m-d H:i:s'),
+                    'status' => 'approved',
+                    'approved_at' => date('Y-m-d H:i:s'),
+                ]);
+                $session->setFlashdata('success', 'Student enrolled successfully.');
+            }
+            
             return redirect()->to('/admin/course/' . $courseId . '/students');
         }
 
-        // GET: list enrolled students
+        // GET: list enrolled students (approved only)
         $db = \Config\Database::connect();
         $enrolled = $db->table('enrollments e')
-            ->select('u.id as user_id, u.name, u.email, e.enrollment_date')
+            ->select('u.id as user_id, u.name, u.email, e.enrollment_date, e.id as enrollment_id, e.status')
             ->join('users u', 'u.id = e.user_id', 'left')
             ->where('e.course_id', $courseId)
+            ->where('e.status', 'approved') // Only show approved enrollments
             ->orderBy('u.name', 'ASC')
             ->get()
             ->getResultArray();
@@ -153,5 +225,384 @@ class Course extends Controller
             'course_id' => $courseId,
             'enrolled' => $enrolled,
         ]);
+    }
+
+    /**
+     * Unenroll a student from a course (teacher/admin action)
+     */
+    public function unenrollStudent()
+    {
+        $session = session();
+        
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User not logged in.']);
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        if (!in_array($role, ['admin', 'teacher'], true)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Access denied. Only teachers and admins can unenroll students.']);
+        }
+
+        $enrollmentId = (int) $this->request->getPost('enrollment_id');
+        $courseId = (int) $this->request->getPost('course_id');
+        
+        if (!$enrollmentId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment ID is required.']);
+        }
+
+        if (!$courseId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Course ID is required.']);
+        }
+
+        $enrollmentModel = new EnrollmentModel();
+        $enrollment = $enrollmentModel->find($enrollmentId);
+
+        if (!$enrollment) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment not found.']);
+        }
+
+        // Verify the enrollment belongs to the specified course
+        if ($enrollment['course_id'] != $courseId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment does not match the course.']);
+        }
+
+        // Verify teacher has access to this course
+        if ($role === 'teacher') {
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')
+                ->where('id', $courseId)
+                ->where('instructor_id', $session->get('user_id'))
+                ->get()
+                ->getRowArray();
+            
+            if (!$course) {
+                return $this->response->setJSON(['success' => false, 'message' => 'You do not have permission to unenroll students from this course.']);
+            }
+        }
+
+        // Get student and course info for notification
+        $db = \Config\Database::connect();
+        $student = $db->table('users')->select('name, email')->where('id', $enrollment['user_id'])->get()->getRowArray();
+        $course = $db->table('courses')->select('title')->where('id', $courseId)->get()->getRowArray();
+        
+        $studentName = $student && isset($student['name']) ? $student['name'] : 'Student';
+        $courseTitle = $course && isset($course['title']) ? $course['title'] : 'the course';
+
+        // Delete the enrollment
+        if ($enrollmentModel->delete($enrollmentId)) {
+            // Notify student
+            try {
+                $notifications = new NotificationModel();
+                $notifications->insert([
+                    'user_id' => (int) $enrollment['user_id'],
+                    'title' => 'Enrollment Removed',
+                    'message' => "You have been unenrolled from {$courseTitle}.",
+                    'link_url' => base_url('student/dashboard'),
+                    'is_read' => 0,
+                ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Failed to create unenrollment notification: ' . $e->getMessage());
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "{$studentName} has been unenrolled from {$courseTitle}."
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to unenroll student.']);
+    }
+
+    /**
+     * Approve enrollment request
+     */
+    public function approveEnrollment()
+    {
+        $session = session();
+        
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User not logged in.']);
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        if (!in_array($role, ['admin', 'teacher'], true)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Access denied. Only teachers can approve enrollments.']);
+        }
+
+        $enrollmentId = (int) $this->request->getPost('enrollment_id');
+        if (!$enrollmentId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment ID is required.']);
+        }
+
+        $enrollmentModel = new EnrollmentModel();
+        $enrollment = $enrollmentModel->find($enrollmentId);
+
+        if (!$enrollment) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment not found.']);
+        }
+
+        // Verify teacher has access to this course
+        if ($role === 'teacher') {
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')
+                ->where('id', $enrollment['course_id'])
+                ->where('instructor_id', $session->get('user_id'))
+                ->get()
+                ->getRowArray();
+            
+            if (!$course) {
+                return $this->response->setJSON(['success' => false, 'message' => 'You do not have permission to approve enrollments for this course.']);
+            }
+        }
+
+        // Update enrollment status
+        $updateData = [
+            'status' => 'approved',
+            'approved_at' => date('Y-m-d H:i:s'),
+            'rejection_reason' => null,
+            'rejected_at' => null
+        ];
+
+        if ($enrollmentModel->update($enrollmentId, $updateData)) {
+            // Get course and student info for notifications
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')->select('title')->where('id', $enrollment['course_id'])->get()->getRowArray();
+            $student = $db->table('users')->select('name')->where('id', $enrollment['user_id'])->get()->getRowArray();
+            
+            $courseTitle = $course && isset($course['title']) ? $course['title'] : 'the course';
+            $studentName = $student && isset($student['name']) ? $student['name'] : 'Student';
+
+            // Notify student
+            try {
+                $notifications = new NotificationModel();
+                $notifications->insert([
+                    'user_id' => (int) $enrollment['user_id'],
+                    'title' => 'Enrollment Approved',
+                    'message' => "Your enrollment request for {$courseTitle} has been approved!",
+                    'link_url' => base_url('student/dashboard'),
+                    'is_read' => 0,
+                ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Failed to create approval notification: ' . $e->getMessage());
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Enrollment approved for {$studentName}."
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to approve enrollment.']);
+    }
+
+    /**
+     * Reject enrollment request
+     */
+    public function rejectEnrollment()
+    {
+        $session = session();
+        
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User not logged in.']);
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        if (!in_array($role, ['admin', 'teacher'], true)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Access denied. Only teachers can reject enrollments.']);
+        }
+
+        $enrollmentId = (int) $this->request->getPost('enrollment_id');
+        $rejectionReason = trim((string) $this->request->getPost('rejection_reason'));
+
+        if (!$enrollmentId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment ID is required.']);
+        }
+
+        if (empty($rejectionReason)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Rejection reason is required.']);
+        }
+
+        $enrollmentModel = new EnrollmentModel();
+        $enrollment = $enrollmentModel->find($enrollmentId);
+
+        if (!$enrollment) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Enrollment not found.']);
+        }
+
+        // Verify teacher has access to this course
+        if ($role === 'teacher') {
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')
+                ->where('id', $enrollment['course_id'])
+                ->where('instructor_id', $session->get('user_id'))
+                ->get()
+                ->getRowArray();
+            
+            if (!$course) {
+                return $this->response->setJSON(['success' => false, 'message' => 'You do not have permission to reject enrollments for this course.']);
+            }
+        }
+
+        // Update enrollment status
+        $updateData = [
+            'status' => 'rejected',
+            'rejected_at' => date('Y-m-d H:i:s'),
+            'rejection_reason' => $rejectionReason,
+            'approved_at' => null
+        ];
+
+        if ($enrollmentModel->update($enrollmentId, $updateData)) {
+            // Get course and student info for notifications
+            $db = \Config\Database::connect();
+            $course = $db->table('courses')->select('title')->where('id', $enrollment['course_id'])->get()->getRowArray();
+            $student = $db->table('users')->select('name')->where('id', $enrollment['user_id'])->get()->getRowArray();
+            
+            $courseTitle = $course && isset($course['title']) ? $course['title'] : 'the course';
+            $studentName = $student && isset($student['name']) ? $student['name'] : 'Student';
+
+            // Notify student
+            try {
+                $notifications = new NotificationModel();
+                $notifications->insert([
+                    'user_id' => (int) $enrollment['user_id'],
+                    'title' => 'Enrollment Rejected',
+                    'message' => "Your enrollment request for {$courseTitle} has been rejected. Reason: {$rejectionReason}",
+                    'link_url' => base_url('student/dashboard'),
+                    'is_read' => 0,
+                ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Failed to create rejection notification: ' . $e->getMessage());
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Enrollment rejected for {$studentName}."
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to reject enrollment.']);
+    }
+
+    /**
+     * Enrollment Management Page - Shows all pending enrollments
+     */
+    public function enrollmentManagement()
+    {
+        $session = session();
+        
+        if (!$session->get('isLoggedIn')) {
+            $session->setFlashdata('login_error', 'Please login to access this page.');
+            return redirect()->to('login');
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        if (!in_array($role, ['admin', 'teacher'], true)) {
+            $session->setFlashdata('access_error', 'Access denied. Only teachers and admins can manage enrollments.');
+            return redirect()->to('dashboard');
+        }
+
+        $enrollmentModel = new EnrollmentModel();
+        $db = \Config\Database::connect();
+        
+        // Check if status column exists
+        $hasStatusField = false;
+        try {
+            $fields = $db->getFieldData('enrollments');
+            foreach ($fields as $field) {
+                if ($field->name === 'status') {
+                    $hasStatusField = true;
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Error checking status field: ' . $e->getMessage());
+        }
+
+        if (!$hasStatusField) {
+            $session->setFlashdata('error', 'Database migration required. Please run: php spark migrate OR execute the SQL script: add_enrollment_approval_fields.sql');
+        }
+        
+        // Get pending enrollments
+        $pendingEnrollments = [];
+        $allEnrollments = [];
+        
+        try {
+            if ($role === 'teacher') {
+                // For teachers, only show enrollments for their courses
+                $userId = (int) $session->get('user_id');
+                
+                if ($hasStatusField) {
+                    $pendingEnrollments = $enrollmentModel->getPendingEnrollmentsForTeacher($userId);
+                    
+                    // Get all enrollments (pending, approved, rejected) for teacher's courses
+                    $allEnrollments = $db->table('enrollments e')
+                        ->select('e.*, u.name as student_name, u.email as student_email, c.title as course_title, c.id as course_id')
+                        ->join('users u', 'u.id = e.user_id')
+                        ->join('courses c', 'c.id = e.course_id')
+                        ->where('c.instructor_id', $userId)
+                        ->orderBy('e.enrollment_date', 'DESC')
+                        ->get()
+                        ->getResultArray();
+                } else {
+                    // Fallback: show all enrollments as pending if status field doesn't exist
+                    $allEnrollments = $db->table('enrollments e')
+                        ->select('e.*, u.name as student_name, u.email as student_email, c.title as course_title, c.id as course_id')
+                        ->join('users u', 'u.id = e.user_id')
+                        ->join('courses c', 'c.id = e.course_id')
+                        ->where('c.instructor_id', $userId)
+                        ->orderBy('e.enrollment_date', 'DESC')
+                        ->get()
+                        ->getResultArray();
+                    
+                    // Mark all as pending if status field doesn't exist
+                    foreach ($allEnrollments as &$enrollment) {
+                        $enrollment['status'] = 'pending';
+                    }
+                    $pendingEnrollments = $allEnrollments;
+                }
+            } else {
+                // For admins, show all enrollments
+                if ($hasStatusField) {
+                    $pendingEnrollments = $enrollmentModel->getPendingEnrollmentsForTeacher(null);
+                    
+                    $allEnrollments = $db->table('enrollments e')
+                        ->select('e.*, u.name as student_name, u.email as student_email, c.title as course_title, c.id as course_id')
+                        ->join('users u', 'u.id = e.user_id')
+                        ->join('courses c', 'c.id = e.course_id')
+                        ->orderBy('e.enrollment_date', 'DESC')
+                        ->get()
+                        ->getResultArray();
+                } else {
+                    // Fallback: show all enrollments as pending if status field doesn't exist
+                    $allEnrollments = $db->table('enrollments e')
+                        ->select('e.*, u.name as student_name, u.email as student_email, c.title as course_title, c.id as course_id')
+                        ->join('users u', 'u.id = e.user_id')
+                        ->join('courses c', 'c.id = e.course_id')
+                        ->orderBy('e.enrollment_date', 'DESC')
+                        ->get()
+                        ->getResultArray();
+                    
+                    // Mark all as pending if status field doesn't exist
+                    foreach ($allEnrollments as &$enrollment) {
+                        $enrollment['status'] = 'pending';
+                    }
+                    $pendingEnrollments = $allEnrollments;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Failed to fetch enrollments: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            $session->setFlashdata('error', 'Failed to load enrollments: ' . $e->getMessage());
+        }
+
+        $data = [
+            'user_name' => $session->get('user_name'),
+            'user_email' => $session->get('user_email'),
+            'role' => $role,
+            'pendingEnrollments' => $pendingEnrollments,
+            'allEnrollments' => $allEnrollments,
+        ];
+
+        return view('course/enrollment_management', $data);
     }
 }

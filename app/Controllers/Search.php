@@ -29,11 +29,12 @@ class Search extends Controller
         $enrolledCourseIds = [];
         
         try {
-            // Get user's enrolled course IDs if student
+            // Get user's enrolled course IDs if student (approved only)
             if ($role === 'student') {
                 $enrollments = $db->table('enrollments')
                     ->select('course_id')
                     ->where('user_id', $userId)
+                    ->where('status', 'approved')
                     ->get()
                     ->getResultArray();
                 $enrolledCourseIds = array_column($enrollments, 'course_id');
@@ -111,12 +112,13 @@ class Search extends Controller
             
             $results = $builder->get()->getResultArray();
             
-            // For students, mark which courses they're enrolled in
+            // For students, mark which courses they're enrolled in (approved only)
             if ($role === 'student' && !empty($results)) {
                 $courseIds = array_column($results, 'id');
                 $enrollments = $db->table('enrollments')
                     ->select('course_id')
                     ->where('user_id', $userId)
+                    ->where('status', 'approved')
                     ->whereIn('course_id', $courseIds)
                     ->get()
                     ->getResultArray();

@@ -57,8 +57,10 @@
                 </li>
                     <?php if ($roleNav === 'admin'): ?>
                         <li class="nav-item"><a class="nav-link <?= url_is('admin/dashboard') ? 'active' : '' ?>" href="<?= base_url('admin/dashboard') ?>">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('admin/enrollments') ? 'active' : '' ?>" href="<?= base_url('admin/enrollments') ?>"><i class="bi bi-list-check me-1"></i>Enrollments</a></li>
                     <?php elseif ($roleNav === 'teacher'): ?>
                         <li class="nav-item"><a class="nav-link <?= url_is('teacher/dashboard') ? 'active' : '' ?>" href="<?= base_url('teacher/dashboard') ?>">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link <?= url_is('teacher/enrollments') ? 'active' : '' ?>" href="<?= base_url('teacher/enrollments') ?>"><i class="bi bi-list-check me-1"></i>Enrollments</a></li>
                     <?php elseif ($roleNav === 'student'): ?>
                         <li class="nav-item"><a class="nav-link <?= url_is('student/dashboard') ? 'active' : '' ?>" href="<?= base_url('student/dashboard') ?>">Dashboard</a></li>
                     <?php endif; ?>

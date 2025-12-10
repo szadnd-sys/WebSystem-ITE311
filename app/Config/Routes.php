@@ -17,6 +17,13 @@ $routes->get('dashboard', 'Auth::dashboard');
 
 $routes->post('/course/enroll', 'Course::enroll');
 $routes->post('/course/drop', 'Course::drop');
+$routes->post('/course/approve-enrollment', 'Course::approveEnrollment');
+$routes->post('/course/reject-enrollment', 'Course::rejectEnrollment');
+$routes->post('/course/unenroll-student', 'Course::unenrollStudent');
+
+// Enrollment Management (teacher/admin)
+$routes->get('/teacher/enrollments', 'Course::enrollmentManagement');
+$routes->get('/admin/enrollments', 'Course::enrollmentManagement');
 
 
 // Materials management
@@ -50,6 +57,18 @@ $routes->post('admin/users/update/(:num)', 'Admin::updateUser/$1');
 $routes->get('admin/users/delete/(:num)', 'Admin::deleteUser/$1');
 $routes->get('admin/users/activate/(:num)', 'Admin::activateUser/$1');
 $routes->get('admin/users/deactivate/(:num)', 'Admin::deactivateUser/$1');
+
+// Admin Course Management
+$routes->get('admin/courses', 'Admin::courses');
+$routes->get('admin/courses/add', 'Admin::addCourse');
+$routes->post('admin/courses/create', 'Admin::createCourse');
+$routes->get('admin/courses/edit/(:num)', 'Admin::editCourse/$1');
+$routes->post('admin/courses/update/(:num)', 'Admin::updateCourse/$1');
+$routes->get('admin/courses/delete/(:num)', 'Admin::deleteCourse/$1');
+$routes->get('admin/courses/assign', 'Admin::assignCourses');
+$routes->post('admin/courses/assign-teacher', 'Admin::assignCourseToTeacher');
+$routes->get('admin/courses/schedule', 'Admin::scheduleCourses');
+$routes->post('admin/courses/update-schedule', 'Admin::updateCourseSchedule');
 
 
 // Announcements (teacher/admin)

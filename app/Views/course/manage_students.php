@@ -26,20 +26,30 @@
             <th>Name</th>
             <th>Email</th>
             <th>Enrolled</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
         <?php if (!empty($enrolled)): ?>
           <?php foreach ($enrolled as $s): ?>
-            <tr>
+            <tr id="enrollment-row-<?= esc($s['enrollment_id'] ?? '') ?>">
               <td><?= esc($s['name'] ?? '') ?></td>
               <td><?= esc($s['email'] ?? '') ?></td>
               <td class="small text-secondary"><?= esc($s['enrollment_date'] ?? '') ?></td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-danger unenroll-btn" 
+                        data-enrollment-id="<?= esc($s['enrollment_id'] ?? '') ?>"
+                        data-course-id="<?= esc($course_id) ?>"
+                        data-student-name="<?= esc($s['name'] ?? '') ?>"
+                        data-course-title="Course #<?= esc($course_id) ?>">
+                  <i class="bi bi-person-x me-1"></i>Unenroll
+                </button>
+              </td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="3" class="text-center text-secondary">No students enrolled yet.</td>
+            <td colspan="4" class="text-center text-secondary">No students enrolled yet.</td>
           </tr>
         <?php endif; ?>
         </tbody>
@@ -48,6 +58,58 @@
   </div>
 </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Unenroll button handler
+            $(document).on('click', '.unenroll-btn', function() {
+                var btn = $(this);
+                var enrollmentId = btn.data('enrollment-id');
+                var courseId = btn.data('course-id');
+                var studentName = btn.data('student-name');
+                var courseTitle = btn.data('course-title');
+                
+                if (!confirm('Are you sure you want to unenroll ' + studentName + ' from ' + courseTitle + '?')) {
+                    return;
+                }
+                
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Unenrolling...');
+                
+                $.post('<?= base_url('course/unenroll-student') ?>', {
+                    enrollment_id: enrollmentId,
+                    course_id: courseId
+                }, function(response) {
+                    if (response.success) {
+                        // Remove the row with fade effect
+                        $('#enrollment-row-' + enrollmentId).fadeOut(300, function() {
+                            $(this).remove();
+                            
+                            // Check if table is empty
+                            var tbody = $(this).closest('tbody');
+                            if (tbody.find('tr').length === 0) {
+                                tbody.html('<tr><td colspan="4" class="text-center text-secondary">No students enrolled yet.</td></tr>');
+                            }
+                            
+                            // Update total count
+                            var badge = $('.badge.text-bg-secondary');
+                            var currentCount = parseInt(badge.text().replace('Total: ', '')) || 0;
+                            badge.text('Total: ' + Math.max(0, currentCount - 1));
+                        });
+                        
+                        // Show success message
+                        alert('Student unenrolled successfully!');
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to unenroll student.'));
+                        btn.prop('disabled', false).html('<i class="bi bi-person-x me-1"></i>Unenroll');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Unenroll failed:', status, error);
+                    alert('Error: Failed to unenroll student. Please try again.');
+                    btn.prop('disabled', false).html('<i class="bi bi-person-x me-1"></i>Unenroll');
+                });
+            });
+        });
+    </script>
 <?= $this->endSection() ?>
 
 <div class="container mt-4">
@@ -89,20 +151,30 @@
 					<th>Name</th>
 					<th>Email</th>
 					<th>Enrolled On</th>
+					<th class="text-end">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php if (!empty($enrolled)): ?>
 					<?php foreach ($enrolled as $s): ?>
-						<tr>
+						<tr id="enrollment-row-<?= esc($s['enrollment_id'] ?? '') ?>">
 							<td><?= esc($s['name'] ?? '') ?></td>
 							<td><?= esc($s['email'] ?? '') ?></td>
 							<td><?= esc($s['enrollment_date'] ?? '') ?></td>
+							<td class="text-end">
+								<button type="button" class="btn btn-sm btn-danger unenroll-btn" 
+										data-enrollment-id="<?= esc($s['enrollment_id'] ?? '') ?>"
+										data-course-id="<?= esc($course_id) ?>"
+										data-student-name="<?= esc($s['name'] ?? '') ?>"
+										data-course-title="Course #<?= esc($course_id) ?>">
+									<i class="bi bi-person-x me-1"></i>Unenroll
+								</button>
+							</td>
 						</tr>
 					<?php endforeach; ?>
 				<?php else: ?>
 					<tr>
-						<td colspan="3" class="text-center text-muted">No students enrolled yet.</td>
+						<td colspan="4" class="text-center text-muted">No students enrolled yet.</td>
 					</tr>
 				<?php endif; ?>
 			</tbody>

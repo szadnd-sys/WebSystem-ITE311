@@ -82,11 +82,20 @@ class Settings extends Controller
 
         if ($this->request->getMethod() === 'POST') {
             $rules = [
-                'name' => 'required|min_length[3]|max_length[100]',
+                'name' => 'required|min_length[3]|max_length[100]|regex_match[/^[a-zA-Z\s\-\'\.]+$/]',
                 'email' => 'required|valid_email|is_unique[users.email,id,' . $userId . ']'
             ];
 
-            if ($this->validate($rules)) {
+            $messages = [
+                'name' => [
+                    'required' => 'Full name is required.',
+                    'min_length' => 'Full name must be at least 3 characters long.',
+                    'max_length' => 'Full name cannot exceed 100 characters.',
+                    'regex_match' => 'Full name cannot contain special characters. Only letters, spaces, hyphens, apostrophes, and periods are allowed.'
+                ]
+            ];
+
+            if ($this->validate($rules, $messages)) {
                 $name = trim($this->request->getPost('name'));
                 $email = $this->request->getPost('email');
 

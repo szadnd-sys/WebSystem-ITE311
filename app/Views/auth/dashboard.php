@@ -17,9 +17,20 @@
         <div class="mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h4 text-light mb-0">Admin Overview</h2>
-                <a href="<?= base_url('admin/users') ?>" class="btn btn-primary btn-sm">
-                    <i class="bi bi-people me-1"></i> Manage Users
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="<?= base_url('admin/courses/schedule') ?>" class="btn btn-warning btn-sm">
+                        <i class="bi bi-calendar-week me-1"></i> Manage Schedules
+                    </a>
+                    <a href="<?= base_url('admin/courses/assign') ?>" class="btn btn-info btn-sm">
+                        <i class="bi bi-person-check me-1"></i> Assign Courses
+                    </a>
+                    <a href="<?= base_url('admin/courses') ?>" class="btn btn-success btn-sm">
+                        <i class="bi bi-journal-bookmark me-1"></i> Manage Courses
+                    </a>
+                    <a href="<?= base_url('admin/users') ?>" class="btn btn-primary btn-sm">
+                        <i class="bi bi-people me-1"></i> Manage Users
+                    </a>
+                </div>
             </div>
 
             <div class="row g-3">
@@ -135,7 +146,7 @@
         <div id="enrollmentToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header bg-success text-white">
                 <i class="bi bi-check-circle-fill me-2"></i>
-                <strong class="me-auto">Enrollment Successful</strong>
+                <strong class="me-auto">Enrollment</strong>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
@@ -147,11 +158,34 @@
     <script>
     $(document).ready(function() {
         // Helper function to show toast notification
-        function showToast(message) {
+        function showToast(message, type) {
+            var toast = $('#enrollmentToast');
+            var header = toast.find('.toast-header');
+            var icon = header.find('i');
+            var strong = header.find('strong');
+            
+            // Reset to default
+            header.removeClass('bg-success text-white bg-warning text-dark bg-danger text-white');
+            icon.removeClass('bi-check-circle-fill bi-exclamation-triangle-fill bi-x-circle-fill');
+            
+            if (type === 'warning' || type === 'pending') {
+                header.addClass('bg-warning text-dark');
+                icon.addClass('bi-exclamation-triangle-fill');
+                strong.text('Enrollment Request Submitted');
+            } else if (type === 'error' || type === 'danger') {
+                header.addClass('bg-danger text-white');
+                icon.addClass('bi-x-circle-fill');
+                strong.text('Enrollment Failed');
+            } else {
+                header.addClass('bg-success text-white');
+                icon.addClass('bi-check-circle-fill');
+                strong.text('Enrollment Successful');
+            }
+            
             $('#toastMessage').text(message);
             var toastElement = document.getElementById('enrollmentToast');
-            var toast = new bootstrap.Toast(toastElement, { delay: 7000 });
-            toast.show();
+            var bsToast = new bootstrap.Toast(toastElement, { delay: 7000 });
+            bsToast.show();
         }
 
         // Helper function to update notification badge - uses same method as template
@@ -259,115 +293,135 @@
             // Disable button immediately to prevent double clicks
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Enrolling...');
 
-            $.post('<?= base_url('course/enroll') ?>', { course_id: courseId }, function(response) {
-                if (response.success) {
-                    // Show real-time toast notification
-                    showToast(response.message + ' Welcome aboard! Happy learning! 🎉');
-                    
-                    // Immediately update badge optimistically (notification should be created)
-                    updateNotificationBadge();
-                    
-                    // Refresh notification badge and list from server after notification is created
-                    setTimeout(function() {
-                        updateNotificationBadge();
-                        refreshNotificationList();
-                    }, 500);
-                    
-                    // Refresh again to ensure notification appears
-                    setTimeout(function() {
-                        updateNotificationBadge();
-                        refreshNotificationList();
-                    }, 1000);
-                    
-                    // Final refresh to ensure everything is synced
-                    setTimeout(function() {
-                        updateNotificationBadge();
-                        refreshNotificationList();
-                    }, 2000);
-
-                    // Get enrolled courses container
-                    var enrolledContainer = $('#enrolledCoursesAccordion');
-                    var enrolledCardBody = enrolledContainer.closest('.card-body');
-                    
-                    // If no enrolled courses section exists, create it
-                    if (enrolledContainer.length === 0) {
-                        var enrolledCard = $('.card-header:contains("Enrolled Courses")').closest('.card');
-                        if (enrolledCard.length) {
-                            enrolledCardBody = enrolledCard.find('.card-body');
-                            enrolledCardBody.html('<div class="accordion" id="enrolledCoursesAccordion"></div>');
-                            enrolledContainer = $('#enrolledCoursesAccordion');
+            $.post('<?= base_url('course/enroll') ?>', { course_id: courseId })
+                .done(function(response) {
+                    // Check if response is valid JSON
+                    if (typeof response === 'string') {
+                        try {
+                            response = JSON.parse(response);
+                        } catch(e) {
+                            console.error('Failed to parse response:', e);
+                            showToast('An error occurred. Please try again.', 'error');
+                            btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Enroll');
+                            return;
                         }
                     }
-
-                    // Add course to enrolled accordion (insert at beginning for newest first order)
-                    // Use course ID for unique and stable accordion IDs
-                    var headingId = 'heading' + courseId;
-                    var collapseId = 'collapse' + courseId;
-                    var newItem = '' +
-                        '<div class="accordion-item">' +
-                            '<h2 class="accordion-header" id="' + headingId + '">' +
-                                '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#' + collapseId + '" aria-expanded="false">' +
-                                    $('<div>').text(title).html() +
-                                '</button>' +
-                            '</h2>' +
-                            '<div id="' + collapseId + '" class="accordion-collapse collapse" data-bs-parent="#enrolledCoursesAccordion">' +
-                                '<div class="accordion-body">' +
-                                    '<p class="mb-2">' + $('<div>').text(description).html() + '</p>' +
-                                    '<div class="d-flex align-items-center justify-content-between mb-3">' +
-                                        '<small class="d-block">Enrolled on: ' + new Date().toLocaleString() + '</small>' +
-                                        '<button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="' + courseId + '" data-title="' + $('<div>').text(title).html() + '" data-description="' + $('<div>').text(description).html() + '">Drop course</button>' +
-                                    '</div>' +
-                                    '<div class="table-responsive">' +
-                                        '<table class="table table-sm table-striped align-middle">' +
-                                            '<thead><tr><th>#</th><th>File Name</th><th>Uploaded</th><th class="text-end">Download</th></tr></thead>' +
-                                            '<tbody><tr><td colspan="4" class="text-center text-muted">No materials yet.</td></tr></tbody>' +
-                                        '</table>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>';
-                    // Insert at the beginning to match newest-first order
-                    enrolledContainer.prepend(newItem);
-
-                    // Update enrolled courses badge count
-                    var badge = enrolledCardBody.prev('.card-header').find('.badge');
-                    if (badge.length) {
-                        var currentCount = parseInt(badge.text()) || 0;
-                        badge.text(currentCount + 1);
-                    }
-
-                    // Remove the card from available courses
-                    card.fadeOut(300, function() {
-                        $(this).remove();
+                    
+                    if (response.success) {
+                    // Always show waiting for approval message for pending enrollments
+                    if (response.status === 'pending') {
+                        // Show warning toast with pending message
+                        showToast('Your enrollment request has been submitted. Please wait for teacher approval. You will be notified once approved.', 'pending');
                         
-                        // If no more available courses, show message
-                        if ($('#availableCoursesRow .col-md-4').length === 0) {
-                            $('#availableCoursesRow').remove();
-                            if ($('#noAvailableMsg').length === 0) {
-                                $('.card:has(.card-header:contains("Available Courses")) .card-body').html('<p id="noAvailableMsg" class="text-center text-muted">No available courses.</p>');
+                        // Change button to show pending status
+                        btn.removeClass('btn-primary').addClass('btn-warning').prop('disabled', true);
+                        btn.html('<i class="bi bi-clock-history me-1"></i>Pending Approval');
+                        
+                        // Reload page after 2 seconds to show in pending enrollments table
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                        return; // Don't continue with other code
+                    } else {
+                        // Only for approved enrollments (shouldn't happen in normal flow)
+                        showToast(response.message + ' Welcome aboard! Happy learning! 🎉', 'success');
+                        
+                        // Add to enrolled courses only if approved
+                        var enrolledContainer = $('#enrolledCoursesAccordion');
+                        var enrolledCardBody = enrolledContainer.closest('.card-body');
+                        
+                        if (enrolledContainer.length === 0) {
+                            var enrolledCard = $('.card-header:contains("Enrolled Courses")').closest('.card');
+                            if (enrolledCard.length) {
+                                enrolledCardBody = enrolledCard.find('.card-body');
+                                enrolledCardBody.html('<div class="accordion" id="enrolledCoursesAccordion"></div>');
+                                enrolledContainer = $('#enrolledCoursesAccordion');
                             }
                         }
-                    });
+
+                        var headingId = 'heading' + courseId;
+                        var collapseId = 'collapse' + courseId;
+                        var newItem = '' +
+                            '<div class="accordion-item">' +
+                                '<h2 class="accordion-header" id="' + headingId + '">' +
+                                    '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#' + collapseId + '" aria-expanded="false">' +
+                                        $('<div>').text(title).html() +
+                                    '</button>' +
+                                '</h2>' +
+                                '<div id="' + collapseId + '" class="accordion-collapse collapse" data-bs-parent="#enrolledCoursesAccordion">' +
+                                    '<div class="accordion-body">' +
+                                        '<p class="mb-2">' + $('<div>').text(description).html() + '</p>' +
+                                        '<div class="d-flex align-items-center justify-content-between mb-3">' +
+                                            '<small class="d-block">Enrolled on: ' + new Date().toLocaleString() + '</small>' +
+                                            '<button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="' + courseId + '" data-title="' + $('<div>').text(title).html() + '" data-description="' + $('<div>').text(description).html() + '">Drop course</button>' +
+                                        '</div>' +
+                                        '<div class="table-responsive">' +
+                                            '<table class="table table-sm table-striped align-middle">' +
+                                                '<thead><tr><th>#</th><th>File Name</th><th>Uploaded</th><th class="text-end">Download</th></tr></thead>' +
+                                                '<tbody><tr><td colspan="4" class="text-center text-muted">No materials yet.</td></tr></tbody>' +
+                                            '</table>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                        enrolledContainer.prepend(newItem);
+
+                        var badge = enrolledCardBody.prev('.card-header').find('.badge');
+                        if (badge.length) {
+                            var currentCount = parseInt(badge.text()) || 0;
+                            badge.text(currentCount + 1);
+                        }
+                    }
+                    
+                    // Update notification badge (only for approved enrollments)
+                    if (response.status !== 'pending') {
+                        updateNotificationBadge();
+                        setTimeout(function() {
+                            updateNotificationBadge();
+                            refreshNotificationList();
+                        }, 500);
+                        
+                        // For approved enrollments, remove the card
+                        card.fadeOut(300, function() {
+                            $(this).remove();
+                            
+                            if ($('#availableCoursesRow .col-md-4').length === 0) {
+                                $('#availableCoursesRow').remove();
+                                if ($('#noAvailableMsg').length === 0) {
+                                    $('.card:has(.card-header:contains("Available Courses")) .card-body').html('<p id="noAvailableMsg" class="text-center text-muted">No available courses.</p>');
+                                }
+                            }
+                        });
+                    }
                 } else {
                     // Re-enable button on error
-                    btn.prop('disabled', false).text('Enroll');
+                    btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Enroll');
                     
                     // Show error toast
-                    var errorToast = $('#enrollmentToast');
-                    errorToast.find('.toast-header').removeClass('bg-success text-white').addClass('bg-danger text-white');
-                    errorToast.find('strong').text('Enrollment Failed');
-                    showToast(response.message || 'Failed to enroll in the course.');
-                    
-                    // Reset toast styling
-                    setTimeout(function() {
-                        errorToast.find('.toast-header').removeClass('bg-danger text-white').addClass('bg-success text-white');
-                        errorToast.find('strong').text('Enrollment Successful');
-                    }, 5000);
+                    showToast(response.message || 'Failed to submit enrollment request. Please try again.', 'error');
                 }
-            }, 'json').fail(function() {
+            }, 'json').fail(function(xhr, status, error) {
+                console.error('Enrollment failed:', status, error, xhr);
+                
                 // Re-enable button on failure
-                btn.prop('disabled', false).text('Enroll');
-                showToast('An error occurred. Please try again.');
+                btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Enroll');
+                
+                var errorMsg = 'An error occurred. Please try again.';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        var errorResponse = JSON.parse(xhr.responseText);
+                        if (errorResponse.message) {
+                            errorMsg = errorResponse.message;
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error parsing response:', e);
+                }
+                
+                // Show error toast with proper styling
+                showToast(errorMsg, 'error');
             });
         });
 
@@ -471,37 +525,70 @@
     });
     </script>
 
-    <?php if (session('role') === 'admin' && !empty($allCourses) && is_array($allCourses)): ?>
+    <?php if (session('role') === 'admin'): ?>
         <div class="mt-4">
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <strong>Manage Courses</strong>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong>Quick Course Management</strong>
+                    <a href="<?= base_url('admin/courses') ?>" class="btn btn-sm btn-success">
+                        <i class="bi bi-arrow-right me-1"></i> View All Courses
+                    </a>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Description</th>
-                                    <th>Created</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($allCourses as $c): ?>
+                    <?php if (!empty($allCourses) && is_array($allCourses)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead>
                                     <tr>
-                                        <td><?= esc($c['title'] ?? '') ?></td>
-                                        <td><?= esc($c['description'] ?? '') ?></td>
-                                        <td><?= esc($c['created_at'] ?? '') ?></td>
-                                        <td class="text-end">
-                                            <a class="btn btn-sm btn-primary" href="<?= base_url('admin/course/' . esc($c['id']) . '/upload') ?>">Upload Materials</a>
-                                        </td>
+                                        <th>Title</th>
+                                        <th>Instructor</th>
+                                        <th>Schedule</th>
+                                        <th>Created</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <?php foreach (array_slice($allCourses, 0, 5) as $c): ?>
+                                        <tr>
+                                            <td><strong><?= esc($c['title'] ?? '') ?></strong></td>
+                                            <td>
+                                                <?php
+                                                $db = \Config\Database::connect();
+                                                $instructor = $db->table('users')->select('name')->where('id', $c['instructor_id'] ?? 0)->get()->getRowArray();
+                                                echo esc($instructor['name'] ?? 'Not assigned');
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php if (!empty($c['schedule_day']) || !empty($c['schedule_time'])): ?>
+                                                    <small><?= esc($c['schedule_day'] ?? '') ?> <?= esc($c['schedule_time'] ?? '') ?></small>
+                                                <?php else: ?>
+                                                    <span class="text-muted">Not scheduled</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><small class="text-muted"><?= esc($c['created_at'] ?? '') ?></small></td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a class="btn btn-outline-primary" href="<?= base_url('admin/courses/edit/' . esc($c['id'])) ?>" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a class="btn btn-outline-info" href="<?= base_url('admin/course/' . esc($c['id']) . '/students') ?>" title="Students">
+                                                        <i class="bi bi-people"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-3">No courses yet.</p>
+                            <a href="<?= base_url('admin/courses/add') ?>" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i> Add Your First Course
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -582,6 +669,77 @@
                 </div>
             </div>
 
+            <!-- Pending Enrollments Section -->
+            <?php if (!empty($pendingEnrollments) && is_array($pendingEnrollments)): ?>
+            <div class="card border-0 shadow-sm mb-3 border-warning">
+                <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong><i class="bi bi-clock-history me-2"></i>Pending Enrollment Requests</strong>
+                        <span class="badge bg-warning text-dark ms-2"><?= count($pendingEnrollments) ?></span>
+                    </div>
+                    <a href="<?= base_url('teacher/enrollments') ?>" class="btn btn-sm btn-warning">
+                        <i class="bi bi-list-check me-1"></i> View All Enrollments
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Requested</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pendingEnrollments as $enrollment): ?>
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong><?= esc($enrollment['student_name'] ?? '') ?></strong>
+                                                <br>
+                                                <small class="text-muted"><?= esc($enrollment['student_email'] ?? '') ?></small>
+                                            </div>
+                                        </td>
+                                        <td><?= esc($enrollment['course_title'] ?? '') ?></td>
+                                        <td>
+                                            <small class="text-muted"><?= esc($enrollment['enrollment_date'] ?? '') ?></small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-success approve-btn" 
+                                                        data-enrollment-id="<?= esc($enrollment['id']) ?>"
+                                                        data-student-name="<?= esc($enrollment['student_name'] ?? '') ?>">
+                                                    <i class="bi bi-check-circle me-1"></i>Approve
+                                                </button>
+                                                <button type="button" class="btn btn-danger reject-btn" 
+                                                        data-enrollment-id="<?= esc($enrollment['id']) ?>"
+                                                        data-student-name="<?= esc($enrollment['student_name'] ?? '') ?>"
+                                                        data-course-title="<?= esc($enrollment['course_title'] ?? '') ?>">
+                                                    <i class="bi bi-x-circle me-1"></i>Reject
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php else: ?>
+            <!-- Show link to enrollment management even if no pending enrollments -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-list-check me-2"></i>Enrollment Management</strong>
+                    <a href="<?= base_url('teacher/enrollments') ?>" class="btn btn-sm btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i> Manage Enrollments
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex align-items-center justify-content-between">
                     <strong><i class="bi bi-inbox me-2"></i>Recent Submissions</strong>
@@ -623,11 +781,105 @@
         <div class="mt-4">
             <h2 class="h4 text-light mb-3"><i class="bi bi-person-badge me-2"></i>Student Overview</h2>
 
-            
+            <!-- Pending Enrollments Table - Always show this section -->
+            <div class="card border-0 shadow-sm mb-3 border-warning">
+                <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong><i class="bi bi-clock-history me-2"></i>Pending Enrollment Requests</strong>
+                        <span class="badge bg-warning text-dark ms-2"><?= !empty($pendingEnrollments) && is_array($pendingEnrollments) ? count($pendingEnrollments) : 0 ?></span>
+                    </div>
+                    <small class="text-muted">Waiting for teacher approval</small>
+                </div>
+                <div class="card-body p-0">
+                    <?php if (!empty($pendingEnrollments) && is_array($pendingEnrollments)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Course Title</th>
+                                        <th>Description</th>
+                                        <th>Requested Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($pendingEnrollments as $enrollment): ?>
+                                        <tr>
+                                            <td><strong><?= esc($enrollment['title'] ?? '') ?></strong></td>
+                                            <td><?= esc($enrollment['description'] ?? '') ?></td>
+                                            <td><small class="text-muted"><?= esc($enrollment['created_at'] ?? '') ?></small></td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock-history me-1"></i>Waiting for Approval
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-6 text-muted"></i>
+                            <p class="text-muted mt-2 mb-0">No pending enrollment requests.</p>
+                            <small class="text-muted">When you enroll in a course, it will appear here waiting for teacher approval.</small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
 
+            <!-- Rejected Enrollments Table -->
+            <?php if (!empty($rejectedEnrollments) && is_array($rejectedEnrollments)): ?>
+            <div class="card border-0 shadow-sm mb-3 border-danger">
+                <div class="card-header bg-danger bg-opacity-10 d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong><i class="bi bi-x-circle me-2"></i>Rejected Enrollment Requests</strong>
+                        <span class="badge bg-danger ms-2"><?= count($rejectedEnrollments) ?></span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Course Title</th>
+                                    <th>Description</th>
+                                    <th>Requested Date</th>
+                                    <th>Rejection Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($rejectedEnrollments as $enrollment): ?>
+                                    <tr>
+                                        <td><strong><?= esc($enrollment['title'] ?? '') ?></strong></td>
+                                        <td><?= esc($enrollment['description'] ?? '') ?></td>
+                                        <td><small class="text-muted"><?= esc($enrollment['created_at'] ?? '') ?></small></td>
+                                        <td>
+                                            <?php if (!empty($enrollment['rejection_reason'])): ?>
+                                                <small class="text-danger"><?= esc($enrollment['rejection_reason']) ?></small>
+                                            <?php else: ?>
+                                                <span class="text-muted">No reason provided</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Rejected
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Approved/Enrolled Courses - Only show approved enrollments -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses</strong>
+                    <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses (Approved Only)</strong>
                     <?php $enrolledCount = !empty($enrolledCourses) && is_array($enrolledCourses) ? count($enrolledCourses) : 0; ?>
                     <span class="badge text-bg-primary fw-bold" style="font-size: 1rem; padding: 0.5rem 0.75rem;"><?= $enrolledCount ?></span>
                 </div>
@@ -646,9 +898,34 @@
                                         <div class="accordion-body">
                                             <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
                                             <div class="d-flex align-items-center justify-content-between mb-3">
-                                                <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
-                                                <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>" data-description="<?= esc($c['description'] ?? '') ?>">Drop course</button>
+                                                <div>
+                                                    <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                                    <?php if (isset($c['status'])): ?>
+                                                        <?php if ($c['status'] === 'pending'): ?>
+                                                            <span class="badge bg-warning text-dark mt-1">
+                                                                <i class="bi bi-clock-history me-1"></i>Pending Approval
+                                                            </span>
+                                                        <?php elseif ($c['status'] === 'rejected'): ?>
+                                                            <span class="badge bg-danger mt-1">
+                                                                <i class="bi bi-x-circle me-1"></i>Rejected
+                                                            </span>
+                                                        <?php elseif ($c['status'] === 'approved'): ?>
+                                                            <span class="badge bg-success mt-1">
+                                                                <i class="bi bi-check-circle me-1"></i>Approved
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if (isset($c['status']) && $c['status'] === 'approved'): ?>
+                                                    <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>" data-description="<?= esc($c['description'] ?? '') ?>">Drop course</button>
+                                                <?php endif; ?>
                                             </div>
+                                            <?php if (isset($c['status']) && $c['status'] === 'rejected' && !empty($c['rejection_reason'])): ?>
+                                                <div class="alert alert-danger alert-sm mb-3">
+                                                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Rejection Reason:</strong>
+                                                    <p class="mb-0 mt-1"><?= esc($c['rejection_reason']) ?></p>
+                                                </div>
+                                            <?php endif; ?>
                                             <div class="table-responsive">
                                                 <table class="table table-sm table-striped align-middle">
                                                     <thead>
@@ -686,7 +963,7 @@
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="text-center text-muted">No enrolled courses.</p>
+                        <p class="text-center text-muted">No approved enrollments yet. Your enrollment requests will appear here once approved by the teacher.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -709,15 +986,29 @@
                     </div>
                     
                     <?php
-                    // Fetch available courses (not enrolled by the user)
+                    // Fetch available courses (not enrolled by the user - exclude approved enrollments only)
+                    // Pending enrollments can still be shown in available courses, but button will be disabled
                     $db = \Config\Database::connect();
                     $user_id = session('user_id');
-                    $availableCourses = $db->table('courses')
-                        ->whereNotIn('id', function($builder) use ($user_id) {
-                            return $builder->select('course_id')->from('enrollments')->where('user_id', $user_id);
-                        })
+                    
+                    // Get all course IDs where user has any enrollment (pending, approved, or rejected)
+                    $allEnrolledCourseIds = $db->table('enrollments')
+                        ->select('course_id')
+                        ->where('user_id', $user_id)
                         ->get()
                         ->getResultArray();
+                    $enrolledCourseIds = array_column($allEnrolledCourseIds, 'course_id');
+                    
+                    // Get available courses (not in any enrollment status)
+                    $availableCourses = [];
+                    if (empty($enrolledCourseIds)) {
+                        $availableCourses = $db->table('courses')->get()->getResultArray();
+                    } else {
+                        $availableCourses = $db->table('courses')
+                            ->whereNotIn('id', $enrolledCourseIds)
+                            ->get()
+                            ->getResultArray();
+                    }
                     ?>
                     <?php if (!empty($availableCourses) && is_array($availableCourses)): ?>
                         <div class="row" id="availableCoursesRow">
@@ -939,6 +1230,97 @@
 
             // Removed quick-upload select to avoid redundancy; per-row actions remain
         })();
+        </script>
+
+        <!-- Enrollment Approval Script -->
+        <script>
+        $(document).ready(function() {
+            // Approve enrollment
+            $(document).on('click', '.approve-btn', function() {
+                var btn = $(this);
+                var enrollmentId = btn.data('enrollment-id');
+                var studentName = btn.data('student-name');
+                
+                if (!confirm('Approve enrollment for ' + studentName + '?')) {
+                    return;
+                }
+                
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Approving...');
+                
+                $.post('<?= base_url('course/approve-enrollment') ?>', {
+                    enrollment_id: enrollmentId
+                }, function(response) {
+                    if (response.success) {
+                        // Remove the row
+                        btn.closest('tr').fadeOut(300, function() {
+                            $(this).remove();
+                            // Check if table is empty
+                            var tbody = btn.closest('tbody');
+                            if (tbody.find('tr').length === 0) {
+                                tbody.html('<tr><td colspan="4" class="text-center text-muted">No pending enrollments.</td></tr>');
+                            }
+                        });
+                        alert('Enrollment approved successfully!');
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to approve enrollment.'));
+                        btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Approve');
+                    }
+                }).fail(function() {
+                    alert('Error: Failed to approve enrollment. Please try again.');
+                    btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Approve');
+                });
+            });
+            
+            // Reject enrollment
+            $(document).on('click', '.reject-btn', function() {
+                var btn = $(this);
+                var enrollmentId = btn.data('enrollment-id');
+                var studentName = btn.data('student-name');
+                var courseTitle = btn.data('course-title');
+                
+                var reason = prompt('Please provide a reason for rejecting ' + studentName + '\'s enrollment in ' + courseTitle + ':\n\n(Reason is required)');
+                
+                if (reason === null) {
+                    return; // User cancelled
+                }
+                
+                reason = reason.trim();
+                if (reason === '') {
+                    alert('Rejection reason is required.');
+                    return;
+                }
+                
+                if (!confirm('Reject enrollment for ' + studentName + '?')) {
+                    return;
+                }
+                
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Rejecting...');
+                
+                $.post('<?= base_url('course/reject-enrollment') ?>', {
+                    enrollment_id: enrollmentId,
+                    rejection_reason: reason
+                }, function(response) {
+                    if (response.success) {
+                        // Remove the row
+                        btn.closest('tr').fadeOut(300, function() {
+                            $(this).remove();
+                            // Check if table is empty
+                            var tbody = btn.closest('tbody');
+                            if (tbody.find('tr').length === 0) {
+                                tbody.html('<tr><td colspan="4" class="text-center text-muted">No pending enrollments.</td></tr>');
+                            }
+                        });
+                        alert('Enrollment rejected successfully!');
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to reject enrollment.'));
+                        btn.prop('disabled', false).html('<i class="bi bi-x-circle me-1"></i>Reject');
+                    }
+                }).fail(function() {
+                    alert('Error: Failed to reject enrollment. Please try again.');
+                    btn.prop('disabled', false).html('<i class="bi bi-x-circle me-1"></i>Reject');
+                });
+            });
+        });
         </script>
     <?php endif; ?>
 <?= $this->endSection() ?>

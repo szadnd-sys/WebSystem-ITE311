@@ -51,12 +51,17 @@ class CreateAnnouncementsTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addKey('course_id');
+        $this->forge->addKey('material_id');
         $this->forge->addKey('created_at');
 
         // Add foreign keys
         $this->forge->addForeignKey('course_id', 'courses', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('instructor_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('material_id', 'materials', 'id', 'CASCADE', 'SET NULL');
+        // Materials table is created in a separate migration that may run after this one.
+        // Only add the FK when the table already exists to avoid MySQL errno 150.
+        if ($this->db->tableExists('materials')) {
+            $this->forge->addForeignKey('material_id', 'materials', 'id', 'CASCADE', 'SET NULL');
+        }
 
         $this->forge->createTable('announcements');
     }

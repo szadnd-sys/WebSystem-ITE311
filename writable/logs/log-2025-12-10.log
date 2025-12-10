@@ -1,0 +1,223 @@
+ERROR - 2025-12-10 06:19:55 --> mysqli_sql_exception: Can't create table `lms_emben`.`announcements` (errno: 150 "Foreign key constraint is incorrectly formed") in C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `a...', 0)
+#1 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `a...')
+#2 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `a...')
+#3 C:\xampp\htdocs\WebSystem-ITE311\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `a...')
+#4 C:\xampp\htdocs\WebSystem-ITE311\app\Database\Migrations\2025-10-29-120000_CreateAnnouncementsTable.php(61): CodeIgniter\Database\Forge->createTable('announcements')
+#5 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(876): App\Database\Migrations\CreateAnnouncementsTable->up()
+#6 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(182): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\WebSystem-ITE311\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\BaseCommand.php(119): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\WebSystem-ITE311\system\Commands\Database\MigrateRefresh.php(87): CodeIgniter\CLI\BaseCommand->call('migrate', Array)
+#11 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\MigrateRefresh->run(Array)
+#12 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate:refresh', Array)
+#13 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#14 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#15 C:\xampp\htdocs\WebSystem-ITE311\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#16 {main}
+ERROR - 2025-12-10 06:23:20 --> Error connecting to the database: mysqli_sql_exception: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'lms_emben', 3306, '', 0)
+#1 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#3 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#5 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(768): CodeIgniter\Database\BaseConnection->tableExists('sequential')
+#6 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(162): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 C:\xampp\htdocs\WebSystem-ITE311\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\WebSystem-ITE311\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php:246
+Stack trace:
+#0 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#2 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#4 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(768): CodeIgniter\Database\BaseConnection->tableExists('sequential')
+#5 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(162): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 C:\xampp\htdocs\WebSystem-ITE311\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#7 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#8 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#9 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#10 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#11 C:\xampp\htdocs\WebSystem-ITE311\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#12 {main}
+ERROR - 2025-12-10 06:23:50 --> mysqli_sql_exception: Can't create table `lms_emben`.`announcements` (errno: 150 "Foreign key constraint is incorrectly formed") in C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `a...', 0)
+#1 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `a...')
+#2 C:\xampp\htdocs\WebSystem-ITE311\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `a...')
+#3 C:\xampp\htdocs\WebSystem-ITE311\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `a...')
+#4 C:\xampp\htdocs\WebSystem-ITE311\app\Database\Migrations\2025-10-29-120000_CreateAnnouncementsTable.php(61): CodeIgniter\Database\Forge->createTable('announcements')
+#5 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(876): App\Database\Migrations\CreateAnnouncementsTable->up()
+#6 C:\xampp\htdocs\WebSystem-ITE311\system\Database\MigrationRunner.php(182): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\WebSystem-ITE311\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\WebSystem-ITE311\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\WebSystem-ITE311\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\WebSystem-ITE311\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2025-12-10 06:27:14 --> mysqli_sql_exception: Can't create table `lms_emben`.`announcements` (errno: 150 "Foreign key constraint is incorrectly formed") in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `a...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `a...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `a...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `a...')
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Database\Migrations\2025-10-29-120000_CreateAnnouncementsTable.php(61): CodeIgniter\Database\Forge->createTable('announcements')
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MigrationRunner.php(876): App\Database\Migrations\CreateAnnouncementsTable->up()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MigrationRunner.php(182): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\ITE311-EMBEN\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2025-12-10 06:30:57 --> mysqli_sql_exception: Table 'lms_emben.assignments' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `a`.`id`...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `a`.`id`...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `a`.`id`...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `a`.`id`...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(227): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:30:57 --> mysqli_sql_exception: Table 'lms_emben.grades' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `g`.`sco...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `g`.`sco...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `g`.`sco...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `g`.`sco...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(240): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:31:09 --> mysqli_sql_exception: Table 'lms_emben.assignments' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `a`.`id`...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `a`.`id`...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `a`.`id`...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `a`.`id`...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(227): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:31:09 --> mysqli_sql_exception: Table 'lms_emben.grades' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `g`.`sco...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `g`.`sco...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `g`.`sco...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `g`.`sco...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(240): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:32:03 --> mysqli_sql_exception: Table 'lms_emben.assignments' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `a`.`id`...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `a`.`id`...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `a`.`id`...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `a`.`id`...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(227): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:32:03 --> mysqli_sql_exception: Table 'lms_emben.grades' doesn't exist in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `g`.`sco...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `g`.`sco...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `g`.`sco...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `g`.`sco...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(240): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:33:00 --> mysqli_sql_exception: Unknown column 'student_name' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `student...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `student...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `student...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `student...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(197): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:33:56 --> mysqli_sql_exception: Unknown column 'student_name' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `student...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `student...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `student...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `student...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(197): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:35:11 --> mysqli_sql_exception: Unknown column 'student_name' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `student...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `student...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `student...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `student...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(197): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+ERROR - 2025-12-10 06:36:08 --> mysqli_sql_exception: Unknown column 'student_name' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `student...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `student...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `student...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `student...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Auth.php(197): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Auth->dashboard()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}

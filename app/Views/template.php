@@ -289,5 +289,87 @@
     })();
     </script>
     <?php endif; ?>
+    <script>
+    // Universal instant filtering: attach to common search inputs so "one-letter" filters work everywhere
+    (function(){
+        function textMatch(haystack, needle) {
+            if (!needle) return true;
+            haystack = String(haystack || '').toLowerCase();
+            needle = String(needle || '').toLowerCase();
+            return haystack.indexOf(needle) !== -1;
+        }
+
+        // Generic course-item filter for cards (used in /search and /course listing)
+        function bindCardFilter(inputSelector, itemSelector, fields) {
+            var $input = $(inputSelector);
+            if (!$input.length) return;
+            $input.off('input.universalFilter').on('input.universalFilter', function(){
+                var q = $(this).val().toLowerCase().trim();
+                var visible = 0;
+                $(itemSelector).each(function(){
+                    var $it = $(this);
+                    var hay = '';
+                    for (var i = 0; i < fields.length; i++) {
+                        var f = fields[i];
+                        var v = $it.attr(f) || $it.data(f.replace('data-','')) || '';
+                        hay += ' ' + String(v);
+                    }
+                    if (q === '' || hay.toLowerCase().indexOf(q) !== -1) {
+                        $it.show(); visible++;
+                    } else {
+                        $it.hide();
+                    }
+                });
+
+                // update badges / counts if present
+                if ($('#coursesBadge').length) $('#coursesBadge').text(visible);
+                if ($('#resultsCount').length) $('#resultsCount').text(visible);
+                if ($('#courseCount').length) {
+                    // courseCount format is like "X courses"
+                    var label = visible + ' course' + (visible !== 1 ? 's' : '');
+                    $('#courseCount').text(label);
+                }
+
+                // show/no-results toggles (best-effort)
+                if ($('#noCoursesResults').length) {
+                    if (visible === 0 && q !== '') $('#noCoursesResults').show(); else $('#noCoursesResults').hide();
+                }
+                if ($('#noCoursesFound').length && $('#availableCoursesRow').length) {
+                    if (visible === 0 && q !== '') { $('#noCoursesFound').show(); $('#availableCoursesRow').hide(); } else { $('#noCoursesFound').hide(); $('#availableCoursesRow').show(); }
+                }
+            }).trigger('input.universalFilter');
+        }
+
+        // Table-row filter (e.g., teacher/course table)
+        function bindTableFilter(inputSelector, tableSelector) {
+            var $input = $(inputSelector);
+            var $table = $(tableSelector);
+            if (!$input.length || !$table.length) return;
+            $input.off('input.universalTableFilter').on('input.universalTableFilter', function(){
+                var q = $(this).val().toLowerCase().trim();
+                $table.find('tbody tr').each(function(){
+                    var rowText = $(this).text().toLowerCase();
+                    if (q === '' || rowText.indexOf(q) !== -1) $(this).show(); else $(this).hide();
+                });
+            }).trigger('input.universalTableFilter');
+        }
+
+        // Bind common inputs used across views
+        bindCardFilter('#searchInput', '.course-item', ['data-title','data-description','data-instructor']);
+        bindCardFilter('#courseSearchInput', '.course-item', ['data-title','data-description','data-instructor']);
+        bindCardFilter('#courseSearchFilter', '.course-card-item', ['data-search-text']);
+        // fallback: any input with class .js-instant-filter and attribute data-target
+        $('.js-instant-filter').each(function(){
+            var $el = $(this);
+            var target = $el.data('target');
+            var fields = ($el.data('fields') || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+            if (target) bindCardFilter('#' + $el.attr('id'), target, fields.length ? fields : ['data-title','data-description']);
+        });
+
+        // Table filters
+        bindTableFilter('#courseFilter', '#coursesTable');
+        bindTableFilter('#teacherCourseFilter', '#coursesTable');
+    })();
+    </script>
 </body>
 </html>

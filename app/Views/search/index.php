@@ -239,7 +239,14 @@ $(document).ready(function() {
     
     // Server-side search function using AJAX with jQuery
     function performServerSideSearch(query, type) {
-        if (!query || query.length < 2) {
+        if (!query) {
+            return;
+        }
+
+        // For very short queries (single character), fall back to client-side filtering
+        // so users get immediate feedback while avoiding expensive DB calls.
+        if (query.length < 2) {
+            performClientSideSearch(query);
             return;
         }
         
@@ -325,6 +332,12 @@ $(document).ready(function() {
         
         coursesContainer.html(html);
         initializeEnrollButtons();
+
+        // Update counts and totalCourses after rendering server-side results
+        var newCount = (courses && courses.length) ? courses.length : $('#coursesList .course-item').length;
+        totalCourses = newCount;
+        $('#coursesBadge').text(newCount);
+        $('#resultsCount').text(newCount);
     }
     
     // Display materials results from server-side search
@@ -465,6 +478,21 @@ $(document).ready(function() {
     
     // Initialize on page load
     initializeEnrollButtons();
+    
+    // If page loaded with a pre-filled query, run initial search according to selected type
+    var initialQuery = searchInput.val().trim();
+    if (initialQuery) {
+        resultsSummary.show();
+        if (searchType.val() === 'client-side') {
+            // Perform client-side filtering immediately
+            performClientSideSearch(initialQuery);
+            $('#searchMode').text('(Client-side filtering using jQuery DOM manipulation)');
+        } else {
+            // Perform server-side search immediately
+            $('#searchMode').text('(Server-side search using AJAX and SQL LIKE queries)');
+            performServerSideSearch(initialQuery, 'all');
+        }
+    }
 });
 </script>
 <?= $this->endSection() ?>

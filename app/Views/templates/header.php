@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top">
     <div class="container-fluid px-3">
         <span class="navbar-brand d-flex align-items-center gap-2" style="cursor: default; pointer-events: none;" tabindex="-1">
-            <span class="fw-bold" style="font-size: 1.5rem;">Learning Management System</span>
+            <span class="fw-bold" style="font-size: 1.5rem;">EMBEN LMS</span>
         </span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
                 data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 

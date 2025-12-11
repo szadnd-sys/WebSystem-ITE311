@@ -6365,3 +6365,273 @@ Stack trace:
 #9 F:\xammp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 #10 F:\xammp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 #11 {main}
+ERROR - 2025-12-10 23:28:04 --> mysqli_sql_exception: Unknown column 'schedule_day' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `t...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `t...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `t...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `t...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Admin.php(894): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Admin->assignCourses()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-12-10 23:28:04 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+[Method: GET, Route: admin/courses/assign]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 2 APPPATH\Controllers\Admin.php(894): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->assignCourses()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:04 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 4 APPPATH\Controllers\Admin.php(894): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->assignCourses()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:04 --> [Caused by] mysqli_sql_exception: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 5 APPPATH\Controllers\Admin.php(894): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->assignCourses()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2025-12-10 23:28:13 --> mysqli_sql_exception: Unknown column 'schedule_day' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `t...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `t...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `t...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `t...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-12-10 23:28:13 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+[Method: GET, Route: admin/courses/schedule]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 2 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:13 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 4 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:13 --> [Caused by] mysqli_sql_exception: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 5 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2025-12-10 23:28:26 --> mysqli_sql_exception: Unknown column 'schedule_day' in 'field list' in C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\ITE311-EMBEN\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `t...', 0)
+#1 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `t...')
+#2 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `t...')
+#3 C:\xampp\htdocs\ITE311-EMBEN\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `t...', Array, false)
+#4 C:\xampp\htdocs\ITE311-EMBEN\app\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+#6 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+#7 C:\xampp\htdocs\ITE311-EMBEN\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\ITE311-EMBEN\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\ITE311-EMBEN\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2025-12-10 23:28:26 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+[Method: GET, Route: admin/courses/schedule]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 2 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:26 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 4 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2025-12-10 23:28:26 --> [Caused by] mysqli_sql_exception: Unknown column 'schedule_day' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = \'3\'
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `id`, `title`, `schedule_day`, `schedule_time`, `schedule_room`
+FROM `courses`
+WHERE `instructor_id` = :instructor_id:
+AND schedule_day IS NOT NULL
+AND schedule_time IS NOT NULL
+ORDER BY `schedule_day` ASC, `schedule_time` ASC', [...], false)
+ 5 APPPATH\Controllers\Admin.php(1032): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin->scheduleCourses()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))

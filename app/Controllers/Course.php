@@ -396,7 +396,7 @@ class Course extends Controller
     }
 
     /**
-     * Reject enrollment request
+     * Reject enrollment request - Teachers only
      */
     public function rejectEnrollment()
     {
@@ -604,5 +604,154 @@ class Course extends Controller
         ];
 
         return view('course/enrollment_management', $data);
+    }
+
+    /**
+     * Display courses listing page with search functionality
+     * Accessible to all authenticated users
+     */
+    public function index()
+    {
+        $session = session();
+        
+        // Check if user is logged in
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to('login');
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        $userId = (int) $session->get('user_id');
+        $search = trim((string) ($this->request->getGet('search') ?? ''));
+
+        $db = \Config\Database::connect();
+        
+        // Get all courses with instructor names
+        $builder = $db->table('courses c')
+            ->select('c.id, c.title, c.description, c.created_at, c.instructor_id, u.name as instructor_name, u.email as instructor_email')
+            ->join('users u', 'u.id = c.instructor_id', 'left');
+
+        // Apply search filter if provided
+        if (!empty($search)) {
+            $builder->groupStart()
+                ->like('c.title', $search)
+                ->orLike('c.description', $search)
+                ->orLike('u.name', $search)
+                ->groupEnd();
+        }
+
+        $courses = $builder->orderBy('c.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        // Get enrolled course IDs for students (approved only)
+        $enrolledCourseIds = [];
+        if ($role === 'student') {
+            $enrollments = $db->table('enrollments')
+                ->select('course_id')
+                ->where('user_id', $userId)
+                ->where('status', 'approved')
+                ->get()
+                ->getResultArray();
+            $enrolledCourseIds = array_column($enrollments, 'course_id');
+        }
+
+        $data = [
+            'user_name' => $session->get('user_name'),
+            'user_email' => $session->get('user_email'),
+            'role' => $role,
+            'courses' => $courses,
+            'enrolledCourseIds' => $enrolledCourseIds,
+            'search' => $search,
+        ];
+
+        return view('course/index', $data);
+    }
+
+    /**
+     * Server-side search endpoint for AJAX requests
+     * Searches courses using SQL LIKE queries
+     */
+    public function search()
+    {
+        $session = session();
+        
+        // Check if user is logged in
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Please login to search courses.'
+            ]);
+        }
+
+        // Check if it's an AJAX request
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)
+                ->setJSON(['success' => false, 'message' => 'Invalid request.']);
+        }
+
+        $query = trim((string) ($this->request->getGet('q') ?? ''));
+        
+        // If query is empty, return empty results
+        if (empty($query)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'courses' => [],
+                'count' => 0,
+                'message' => 'Please enter a search term.'
+            ]);
+        }
+
+        $role = strtolower((string) $session->get('role'));
+        $userId = (int) $session->get('user_id');
+
+        $db = \Config\Database::connect();
+        $results = [];
+
+        try {
+            $builder = $db->table('courses c')
+                ->select('c.id, c.title, c.description, c.created_at, c.instructor_id, u.name as instructor_name, u.email as instructor_email')
+                ->join('users u', 'u.id = c.instructor_id', 'left');
+
+            // Build search query using LIKE for title, description, and instructor name
+            $builder->groupStart()
+                ->like('c.title', $query, 'both')
+                ->orLike('c.description', $query, 'both')
+                ->orLike('u.name', $query, 'both')
+                ->groupEnd();
+
+            $builder->orderBy('c.created_at', 'DESC');
+
+            $results = $builder->get()->getResultArray();
+
+            // For students, mark which courses they're enrolled in (approved only)
+            if ($role === 'student' && !empty($results)) {
+                $courseIds = array_column($results, 'id');
+                $enrollments = $db->table('enrollments')
+                    ->select('course_id')
+                    ->where('user_id', $userId)
+                    ->where('status', 'approved')
+                    ->whereIn('course_id', $courseIds)
+                    ->get()
+                    ->getResultArray();
+                $enrolledIds = array_column($enrollments, 'course_id');
+
+                foreach ($results as &$course) {
+                    $course['is_enrolled'] = in_array($course['id'], $enrolledIds);
+                }
+                unset($course);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Course search error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An error occurred during search. Please try again.'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'courses' => $results,
+            'count' => count($results)
+        ]);
     }
 }

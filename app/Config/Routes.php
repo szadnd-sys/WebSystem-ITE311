@@ -21,6 +21,10 @@ $routes->post('/course/approve-enrollment', 'Course::approveEnrollment');
 $routes->post('/course/reject-enrollment', 'Course::rejectEnrollment');
 $routes->post('/course/unenroll-student', 'Course::unenrollStudent');
 
+// Course Listing and Search
+$routes->get('/courses', 'Course::index');
+$routes->get('/course/search', 'Course::search');
+
 // Enrollment Management (teacher/admin)
 $routes->get('/teacher/enrollments', 'Course::enrollmentManagement');
 $routes->get('/admin/enrollments', 'Course::enrollmentManagement');

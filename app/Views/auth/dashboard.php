@@ -781,190 +781,150 @@
         <div class="mt-4">
             <h2 class="h4 text-light mb-3"><i class="bi bi-person-badge me-2"></i>Student Overview</h2>
 
-            <!-- Pending Enrollments Table - Always show this section -->
-            <div class="card border-0 shadow-sm mb-3 border-warning">
-                <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong><i class="bi bi-clock-history me-2"></i>Pending Enrollment Requests</strong>
-                        <span class="badge bg-warning text-dark ms-2"><?= !empty($pendingEnrollments) && is_array($pendingEnrollments) ? count($pendingEnrollments) : 0 ?></span>
-                    </div>
-                    <small class="text-muted">Waiting for teacher approval</small>
-                </div>
-                <div class="card-body p-0">
-                    <?php if (!empty($pendingEnrollments) && is_array($pendingEnrollments)): ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Course Title</th>
-                                        <th>Description</th>
-                                        <th>Requested Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingEnrollments as $enrollment): ?>
-                                        <tr>
-                                            <td><strong><?= esc($enrollment['title'] ?? '') ?></strong></td>
-                                            <td><?= esc($enrollment['description'] ?? '') ?></td>
-                                            <td><small class="text-muted"><?= esc($enrollment['created_at'] ?? '') ?></small></td>
-                                            <td>
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="bi bi-clock-history me-1"></i>Waiting for Approval
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox display-6 text-muted"></i>
-                            <p class="text-muted mt-2 mb-0">No pending enrollment requests.</p>
-                            <small class="text-muted">When you enroll in a course, it will appear here waiting for teacher approval.</small>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Rejected Enrollments Table -->
-            <?php if (!empty($rejectedEnrollments) && is_array($rejectedEnrollments)): ?>
-            <div class="card border-0 shadow-sm mb-3 border-danger">
-                <div class="card-header bg-danger bg-opacity-10 d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong><i class="bi bi-x-circle me-2"></i>Rejected Enrollment Requests</strong>
-                        <span class="badge bg-danger ms-2"><?= count($rejectedEnrollments) ?></span>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Course Title</th>
-                                    <th>Description</th>
-                                    <th>Requested Date</th>
-                                    <th>Rejection Reason</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($rejectedEnrollments as $enrollment): ?>
-                                    <tr>
-                                        <td><strong><?= esc($enrollment['title'] ?? '') ?></strong></td>
-                                        <td><?= esc($enrollment['description'] ?? '') ?></td>
-                                        <td><small class="text-muted"><?= esc($enrollment['created_at'] ?? '') ?></small></td>
-                                        <td>
-                                            <?php if (!empty($enrollment['rejection_reason'])): ?>
-                                                <small class="text-danger"><?= esc($enrollment['rejection_reason']) ?></small>
-                                            <?php else: ?>
-                                                <span class="text-muted">No reason provided</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-x-circle me-1"></i>Rejected
-                                            </span>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Approved/Enrolled Courses - Only show approved enrollments -->
+            <!-- Combined Enrollment Panel: split into two halves -->
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses (Approved Only)</strong>
-                    <?php $enrolledCount = !empty($enrolledCourses) && is_array($enrolledCourses) ? count($enrolledCourses) : 0; ?>
-                    <span class="badge text-bg-primary fw-bold" style="font-size: 1rem; padding: 0.5rem 0.75rem;"><?= $enrolledCount ?></span>
-                </div>
                 <div class="card-body">
-                    <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
-                        <div class="accordion" id="enrolledCoursesAccordion">
-                            <?php foreach ($enrolledCourses as $idx => $c): ?>
-                                <?php $cid = (int)($c['id'] ?? 0); ?>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="heading<?= $cid ?>">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $cid ?>" aria-expanded="false" aria-controls="collapse<?= $cid ?>">
-                                            <?= esc($c['title'] ?? '') ?>
-                                        </button>
-                                    </h2>
-                                    <div id="collapse<?= $cid ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $cid ?>" data-bs-parent="#enrolledCoursesAccordion">
-                                        <div class="accordion-body">
-                                            <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
-                                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                                <div>
-                                                    <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
-                                                    <?php if (isset($c['status'])): ?>
-                                                        <?php if ($c['status'] === 'pending'): ?>
-                                                            <span class="badge bg-warning text-dark mt-1">
-                                                                <i class="bi bi-clock-history me-1"></i>Pending Approval
-                                                            </span>
-                                                        <?php elseif ($c['status'] === 'rejected'): ?>
-                                                            <span class="badge bg-danger mt-1">
-                                                                <i class="bi bi-x-circle me-1"></i>Rejected
-                                                            </span>
-                                                        <?php elseif ($c['status'] === 'approved'): ?>
-                                                            <span class="badge bg-success mt-1">
-                                                                <i class="bi bi-check-circle me-1"></i>Approved
-                                                            </span>
-                                                        <?php endif; ?>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php if (isset($c['status']) && $c['status'] === 'approved'): ?>
-                                                    <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>" data-description="<?= esc($c['description'] ?? '') ?>">Drop course</button>
-                                                <?php endif; ?>
-                                            </div>
-                                            <?php if (isset($c['status']) && $c['status'] === 'rejected' && !empty($c['rejection_reason'])): ?>
-                                                <div class="alert alert-danger alert-sm mb-3">
-                                                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Rejection Reason:</strong>
-                                                    <p class="mb-0 mt-1"><?= esc($c['rejection_reason']) ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm table-striped align-middle">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>File Name</th>
-                                                            <th>Uploaded</th>
-                                                            <th class="text-end">Download</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php $materialsForCourse = $materialsByCourse[$cid] ?? []; ?>
-                                                        <?php if (!empty($materialsForCourse)): ?>
-                                                            <?php foreach ($materialsForCourse as $mi => $m): ?>
-                                                                <tr>
-                                                                    <td><?= $mi + 1 ?></td>
-                                                                    <td><?= esc($m['file_name'] ?? '') ?></td>
-                                                                    <td><?= esc($m['created_at'] ?? '') ?></td>
-                                                                    <td class="text-end">
-                                                                        <a class="btn btn-sm btn-primary" href="<?= base_url('materials/download/' . esc($m['id'])) ?>">Download</a>
-                                                                    </td>
-                                                                </tr>
-                                                            <?php endforeach; ?>
-                                                        <?php else: ?>
-                                                            <tr>
-                                                                <td colspan="4" class="text-center text-muted">No materials yet.</td>
-                                                            </tr>
-                                                        <?php endif; ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 h-100 mb-0 border-warning">
+                                <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="bi bi-clock-history me-2"></i>Pending Enrollment Requests</strong>
+                                        <span class="badge bg-warning text-dark ms-2"><?= !empty($pendingEnrollments) && is_array($pendingEnrollments) ? count($pendingEnrollments) : 0 ?></span>
                                     </div>
+                                    <small class="text-muted">Waiting for teacher approval</small>
                                 </div>
-                            <?php endforeach; ?>
+                                <div class="card-body p-0">
+                                    <?php if (!empty($pendingEnrollments) && is_array($pendingEnrollments)): ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0 align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Course Title</th>
+                                                        <th>Description</th>
+                                                        <th>Requested Date</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($pendingEnrollments as $enrollment): ?>
+                                                        <tr>
+                                                            <td><strong><?= esc($enrollment['title'] ?? '') ?></strong></td>
+                                                            <td><?= esc($enrollment['description'] ?? '') ?></td>
+                                                            <td><small class="text-muted"><?= esc($enrollment['created_at'] ?? '') ?></small></td>
+                                                            <td>
+                                                                <span class="badge bg-warning text-dark">
+                                                                    <i class="bi bi-clock-history me-1"></i>Waiting for Approval
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="text-center py-4">
+                                            <i class="bi bi-inbox display-6 text-muted"></i>
+                                            <p class="text-muted mt-2 mb-0">No pending enrollment requests.</p>
+                                            <small class="text-muted">When you enroll in a course, it will appear here waiting for teacher approval.</small>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
-                    <?php else: ?>
-                        <p class="text-center text-muted">No approved enrollments yet. Your enrollment requests will appear here once approved by the teacher.</p>
-                    <?php endif; ?>
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 h-100 mb-0">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <strong><i class="bi bi-journal-check me-2"></i>Enrolled Courses</strong>
+                                    <?php $enrolledCount = !empty($enrolledCourses) && is_array($enrolledCourses) ? count($enrolledCourses) : 0; ?>
+                                    <span class="badge text-bg-primary fw-bold" style="font-size: 1rem; padding: 0.5rem 0.75rem;"><?= $enrolledCount ?></span>
+                                </div>
+                                <div class="card-body">
+                                    <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
+                                        <div class="accordion" id="enrolledCoursesAccordion">
+                                            <?php foreach ($enrolledCourses as $idx => $c): ?>
+                                                <?php $cid = (int)($c['id'] ?? 0); ?>
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="heading<?= $cid ?>">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $cid ?>" aria-expanded="false" aria-controls="collapse<?= $cid ?>">
+                                                            <?= esc($c['title'] ?? '') ?>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapse<?= $cid ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $cid ?>" data-bs-parent="#enrolledCoursesAccordion">
+                                                        <div class="accordion-body">
+                                                            <p class="mb-2"><?= esc($c['description'] ?? '') ?></p>
+                                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                                <div>
+                                                                    <small class="d-block">Enrolled on: <?= esc($c['created_at'] ?? '') ?></small>
+                                                                    <?php if (isset($c['status'])): ?>
+                                                                        <?php if ($c['status'] === 'pending'): ?>
+                                                                            <span class="badge bg-warning text-dark mt-1">
+                                                                                <i class="bi bi-clock-history me-1"></i>Pending Approval
+                                                                            </span>
+                                                                        <?php elseif ($c['status'] === 'rejected'): ?>
+                                                                            <span class="badge bg-danger mt-1">
+                                                                                <i class="bi bi-x-circle me-1"></i>Rejected
+                                                                            </span>
+                                                                        <?php elseif ($c['status'] === 'approved'): ?>
+                                                                            <span class="badge bg-success mt-1">
+                                                                                <i class="bi bi-check-circle me-1"></i>Approved
+                                                                            </span>
+                                                                        <?php endif; ?>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                                <?php if (isset($c['status']) && $c['status'] === 'approved'): ?>
+                                                                    <button class="btn btn-sm btn-outline-danger drop-btn" data-course-id="<?= $cid ?>" data-title="<?= esc($c['title'] ?? '') ?>" data-description="<?= esc($c['description'] ?? '') ?>">Drop course</button>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                            <?php if (isset($c['status']) && $c['status'] === 'rejected' && !empty($c['rejection_reason'])): ?>
+                                                                <div class="alert alert-danger alert-sm mb-3">
+                                                                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Rejection Reason:</strong>
+                                                                    <p class="mb-0 mt-1"><?= esc($c['rejection_reason']) ?></p>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm table-striped align-middle">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>#</th>
+                                                                            <th>File Name</th>
+                                                                            <th>Uploaded</th>
+                                                                            <th class="text-end">Download</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <?php $materialsForCourse = $materialsByCourse[$cid] ?? []; ?>
+                                                                        <?php if (!empty($materialsForCourse)): ?>
+                                                                            <?php foreach ($materialsForCourse as $mi => $m): ?>
+                                                                                <tr>
+                                                                                    <td><?= $mi + 1 ?></td>
+                                                                                    <td><?= esc($m['file_name'] ?? '') ?></td>
+                                                                                    <td><?= esc($m['created_at'] ?? '') ?></td>
+                                                                                    <td class="text-end">
+                                                                                        <a class="btn btn-sm btn-primary" href="<?= base_url('materials/download/' . esc($m['id'])) ?>">Download</a>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            <?php endforeach; ?>
+                                                                        <?php else: ?>
+                                                                            <tr>
+                                                                                <td colspan="4" class="text-center text-muted">No materials yet.</td>
+                                                                            </tr>
+                                                                        <?php endif; ?>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <p class="text-center text-muted">No approved enrollments yet. Your enrollment requests will appear here once approved by the teacher.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
